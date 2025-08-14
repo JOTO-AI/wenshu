@@ -1,0 +1,50 @@
+# Add files here to ignore them from prettier formatting
+
+# Build outputs
+/dist
+/build
+/coverage
+/out-tsc
+
+# Nx cache
+/.nx/cache
+/.nx/workspace-data
+
+# Dependencies
+/node_modules
+
+# Python files and cache (handled by black)
+/apps/api/**/*.py
+/apps/api/.mypy_cache
+/apps/api/.venv
+
+# Generated files
+*.d.ts
+*.tsbuildinfo
+
+# Lock files
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Logs
+*.log
+
+# Environment files
+.env*
+
+# IDE files
+.vscode/settings.json
+
+# License files
+**/LICENSE*
+**/licenses/**
+
+# Cache directories
+**/.mypy_cache/**
+**/.venv/**
+**/node_modules/**
+
+# JSON data files
+**/*.data.json
+**/*.meta.json

@@ -1,0 +1,128 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Admin App",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/nx",
+      "args": ["serve", "admin-app"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Debug Web App",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/nx",
+      "args": ["serve", "web-app"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Debug Python API",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/apps/api/.venv/bin/uvicorn",
+      "args": [
+        "src.main:app",
+        "--reload",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000"
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/apps/api",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/apps/api/src"
+      },
+      "justMyCode": true
+    },
+    {
+      "name": "Test Admin App",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/nx",
+      "args": ["test", "admin-app"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "NODE_ENV": "test"
+      },
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Test Web App",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/nx",
+      "args": ["test", "web-app"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "NODE_ENV": "test"
+      },
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Test Python API",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["-v"],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/apps/api",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/apps/api/src"
+      },
+      "justMyCode": true
+    },
+    {
+      "name": "Lint All",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/nx",
+      "args": ["run-many", "--target=lint", "--all"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "cwd": "${workspaceFolder}",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Build All",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/nx",
+      "args": ["run-many", "--target=build", "--all"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "cwd": "${workspaceFolder}",
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug Full Stack",
+      "configurations": ["Debug Admin App", "Debug Python API"],
+      "stopAll": true
+    },
+    {
+      "name": "Test All",
+      "configurations": ["Test Admin App", "Test Web App", "Test Python API"],
+      "stopAll": true
+    }
+  ]
+}

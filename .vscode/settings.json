@@ -1,0 +1,139 @@
+{
+  // 编辑器设置
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
+  "editor.rulers": [80, 120],
+  "editor.wordWrap": "on",
+  "editor.minimap.enabled": true,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
+
+  // 文件设置
+  "files.autoSave": "onFocusChange",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.eol": "\n",
+
+  // 搜索设置
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/coverage": true,
+    "**/.nx": true,
+    "**/out-tsc": true,
+    "**/.mypy_cache": true,
+    "**/.venv": true,
+    "**/pnpm-lock.yaml": true
+  },
+
+  // 文件监视器设置
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/dist/**": true,
+    "**/build/**": true,
+    "**/.nx/**": true,
+    "**/out-tsc/**": true,
+    "**/.mypy_cache/**": true,
+    "**/.venv/**": true
+  },
+
+  // TypeScript 设置
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.suggest.autoImports": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.inlayHints.parameterNames.enabled": "literals",
+  "typescript.inlayHints.variableTypes.enabled": false,
+  "typescript.inlayHints.functionLikeReturnTypes.enabled": true,
+
+  // ESLint 设置
+  "eslint.workingDirectories": ["./"],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+
+  // Prettier 设置
+  "prettier.configPath": "./.prettierrc",
+  "prettier.ignorePath": "./.prettierignore",
+
+  // Python 设置
+  "python.defaultInterpreterPath": "./apps/api/.venv/bin/python",
+  "python.formatting.provider": "black",
+  "python.linting.enabled": true,
+  "python.linting.mypyEnabled": true,
+  "python.linting.mypyPath": "./apps/api/.venv/bin/mypy",
+  "python.linting.mypyArgs": ["--config-file", "./apps/api/mypy.ini"],
+
+  // 语言特定设置
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+
+  // 终端设置
+  "terminal.integrated.defaultProfile.osx": "bash",
+  "terminal.integrated.cwd": "${workspaceFolder}",
+
+  // Git 设置
+  "git.autofetch": true,
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
+
+  // 工作区设置
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "*.ts": "${capture}.js",
+    "*.js": "${capture}.js.map, ${capture}.min.js, ${capture}.d.ts",
+    "*.jsx": "${capture}.js",
+    "*.tsx": "${capture}.js",
+    "tsconfig.json": "tsconfig.*.json",
+    "package.json": "package-lock.json, pnpm-lock.yaml, yarn.lock, .npmrc"
+  },
+
+  // Nx 设置
+  "nxConsole.showNodeVersionOnStartup": false,
+  "nxConsole.enableTelemetry": false,
+  "nxConsole.generateAiAgentRules": true
+}

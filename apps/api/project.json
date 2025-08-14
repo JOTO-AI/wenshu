@@ -1,0 +1,36 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "api",
+  "type": "application",
+  "sourceRoot": "apps/api/src",
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run uvicorn src.main:app --reload --host 0.0.0.0 --port 8000",
+        "cwd": "apps/api"
+      }
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run uvicorn src.main:app --reload --host 0.0.0.0 --port ${API_PORT:-8000}",
+        "cwd": "apps/api"
+      }
+    },
+    "install": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv sync",
+        "cwd": "apps/api"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run pytest",
+        "cwd": "apps/api"
+      }
+    }
+  }
+}
