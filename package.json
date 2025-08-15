@@ -5,9 +5,8 @@
   "private": true,
   "scripts": {
     "dev:web": "nx serve web-app",
-    "dev:admin": "nx serve admin-app",
     "dev:api": "cd apps/api && uv run uvicorn src.main:app --reload --host 0.0.0.0 --port ${API_PORT:-8000}",
-    "dev:all": "concurrently \"npm run dev:admin\" \"npm run dev:web\" \"npm run dev:api\"",
+    "dev:all": "concurrently \"npm run dev:web\" \"npm run dev:api\"",
     "dev": "nx run-many --target=dev --all --parallel=3",
     "dev:fast": "nx run-many --target=dev --all --parallel=3 --skip-nx-cache",
     "dev:safe": "./scripts/dev-manager.sh start",

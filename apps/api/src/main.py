@@ -3,6 +3,11 @@ from typing import Dict, Any
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+# 导入功能模块路由
+from .auth.router import router as auth_router
+from .chat.router import router as chat_router
+from .users.router import router as users_router
+
 app = FastAPI(
     title="智能问数 API",
     description="企业级私有化对话式数据分析平台",
@@ -21,6 +26,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 注册功能模块路由
+app.include_router(auth_router, prefix="/api/v1")
+app.include_router(chat_router, prefix="/api/v1")
+app.include_router(users_router, prefix="/api/v1")
 
 @app.get("/")
 async def root() -> Dict[str, str]:

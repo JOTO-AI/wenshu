@@ -7,9 +7,6 @@
       "path": "./apps/web-app"
     },
     {
-      "path": "./apps/admin-app"
-    },
-    {
       "path": "./libs/shared-types"
     },
     {
