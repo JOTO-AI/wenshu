@@ -1,2 +1,2 @@
-// 数据集管理页面导出
-// TODO: 导出数据集管理页面
+const DatasetsPage = () => "Datasets Page - Coming Soon";
+export default DatasetsPage;

@@ -24,28 +24,28 @@ export const AppRoutes = () => {
       <Suspense fallback={<GlobalLoadingSpinner />}>
         <Routes>
           {/* 认证路由 */}
-          <Route 
-            path="/login" 
+          <Route
+            path="/login"
             element={
               <AuthLayout>
                 <LoginPage />
               </AuthLayout>
-            } 
+            }
           />
-          
+
           {/* 管理端路由 - 需要管理员权限 */}
           <Route path="/admin/*" element={<AdminRoutes />} />
-          
+
           {/* 用户端路由 - 需要登录 */}
-          <Route 
-            path="/*" 
+          <Route
+            path="/*"
             element={
               <AuthGuard>
                 <ClientRoutes />
               </AuthGuard>
-            } 
+            }
           />
-          
+
           {/* 默认重定向 */}
           <Route path="/" element={<Navigate to="/chat" replace />} />
         </Routes>

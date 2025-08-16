@@ -1,6 +1,4 @@
-// 认证页面导出
-// 用于存放登录页面、SSO回调页面等
+// 最简单的登录页面 - 遵循KISS原则
+const LoginPage = () => "Login Page - Coming Soon";
 
-// TODO: 导出认证页面
-// export { LoginPage } from './login-page';
-// export { SSOCallbackPage } from './sso-callback-page';
+export default LoginPage;

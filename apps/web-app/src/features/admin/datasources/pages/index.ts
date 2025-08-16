@@ -1,3 +1,2 @@
-// 数据源管理页面导出
-// TODO: 导出数据源管理页面
-// export { DataSourcesPage } from './datasources-page';
+const DataSourcesPage = () => "DataSources Page - Coming Soon";
+export default DataSourcesPage;

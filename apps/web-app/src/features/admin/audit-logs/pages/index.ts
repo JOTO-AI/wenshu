@@ -1,2 +1,2 @@
-// 日志管理页面导出
-// TODO: 导出日志管理页面
+const AuditLogsPage = () => "Audit Logs Page - Coming Soon";
+export default AuditLogsPage;
