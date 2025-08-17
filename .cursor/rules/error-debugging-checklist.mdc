@@ -1,0 +1,297 @@
+---
+description: '系统性错误调试和问题解决检查清单'
+globs:
+alwaysApply: true
+---
+
+# 错误调试和问题解决检查清单
+
+## 🚨 立即执行原则
+
+**遇到任何错误时，必须按照以下顺序系统性地分析和解决，而不是头痛医头、脚痛医脚！**
+
+## 📋 通用调试流程
+
+### Phase 1: 问题分析和信息收集
+
+1. **🔍 完整错误信息收集**
+
+   - [ ] 复制完整的错误堆栈信息
+   - [ ] 记录错误发生的具体步骤
+   - [ ] 截图或记录控制台输出
+   - [ ] 确认错误类型：编译时 vs 运行时 vs 构建时
+
+2. **📊 使用 Sequential Thinking MCP 分析**
+
+   ```
+   必须先调用 Sequential Thinking MCP：
+   1. 分析错误的根本原因
+   2. 识别可能的影响范围
+   3. 制定系统性解决方案
+   4. 预测解决后的验证方法
+   ```
+
+3. **🗂️ 问题分类**
+   - TypeScript 类型错误
+   - 模块导入/路径错误
+   - 依赖版本冲突
+   - 配置文件错误
+   - 运行时逻辑错误
+
+### Phase 2: 系统性排查
+
+4. **🔧 基础环境检查**
+
+   - [ ] Node.js 版本是否正确
+   - [ ] 包管理器版本 (`pnpm --version`)
+   - [ ] 工作区完整性 (`nx graph`)
+   - [ ] 依赖安装状态 (`pnpm install --frozen-lockfile`)
+
+5. **📁 文件系统检查**
+   - [ ] 文件路径是否正确存在
+   - [ ] 文件权限是否正确
+   - [ ] 是否有文件名大小写问题（特别是 macOS）
+   - [ ] 临时文件或缓存是否需要清理
+
+## 🎯 特定错误类型解决方案
+
+### TypeScript 类型错误
+
+**检查顺序：**
+
+1. **路径映射问题**
+
+   ```bash
+   # 检查 tsconfig.json 中的 paths 配置
+   cat tsconfig.base.json | grep -A 10 '"paths"'
+
+   # 验证路径映射是否正确
+   ls -la $(echo 'libs/ui/src/index.ts' | sed 's|.*|\0|')
+   ```
+
+2. **循环依赖检查**
+
+   ```bash
+   # 查找可能的循环导入
+   find libs/ui/src -name "*.ts" -o -name "*.tsx" | xargs grep -l "@/"
+   ```
+
+3. **类型声明问题**
+   ```bash
+   # 检查是否有缺失的类型声明
+   pnpm exec tsc --showConfig
+   ```
+
+### 模块导入错误
+
+**常见模式和解决方案：**
+
+1. **"Cannot find module" 错误**
+
+   ```typescript
+   // ❌ 错误示例
+   import { Button } from '@/components/ui/button'; // 在 libs 内部
+
+   // ✅ 正确修复
+   import { Button } from './button'; // 使用相对路径
+   ```
+
+2. **"Module resolution" 错误**
+   - 检查 `package.json` 的 `exports` 字段
+   - 验证 Vite/Webpack 配置的别名设置
+   - 确认 TypeScript 的 `moduleResolution` 设置
+
+### 构建错误
+
+**检查顺序：**
+
+1. **清理构建缓存**
+
+   ```bash
+   pnpm exec nx reset
+   rm -rf node_modules/.cache
+   rm -rf dist
+   ```
+
+2. **依赖版本冲突**
+
+   ```bash
+   # 检查重复依赖
+   pnpm list --depth=0
+   pnpm dedupe
+   ```
+
+3. **配置文件验证**
+   - `vite.config.ts`
+   - `tailwind.config.js`
+   - `tsconfig.json`
+
+## 🛡️ 预防性检查清单
+
+### 开发前检查
+
+- [ ] 工作区状态正常 (`nx graph`)
+- [ ] 所有依赖已安装 (`pnpm install`)
+- [ ] TypeScript 配置正确 (`nx typecheck`)
+- [ ] 没有未解决的 lint 问题
+
+### 代码修改后检查
+
+- [ ] 立即运行类型检查 (`pnpm exec nx typecheck`)
+- [ ] 验证构建不会失败 (`pnpm exec nx build`)
+- [ ] 检查是否引入了新的警告
+- [ ] 确认修改不影响其他模块
+
+### 提交前检查
+
+- [ ] 所有测试通过
+- [ ] 类型检查通过
+- [ ] 构建成功
+- [ ] 代码格式化正确
+- [ ] 提交信息清晰
+
+## 🔍 具体技术问题解决
+
+### shadcn-ui 组件问题
+
+**常见问题和解决方案：**
+
+1. **组件导入路径错误**
+
+   ```bash
+   # 批量修复脚本
+   find libs/ui/src/components/ui -name "*.tsx" -exec sed -i '' 's|@/components/ui/|./|g' {} \;
+   find libs/ui/src/components/ui -name "*.tsx" -exec sed -i '' 's|@/lib/utils|../../lib/utils|g' {} \;
+   ```
+
+2. **样式不生效问题**
+   - 检查 `tailwind.config.js` 的 content 配置
+   - 验证 CSS 变量定义
+   - 确认样式文件导入顺序
+
+### Assistant UI 集成问题
+
+**检查要点：**
+
+1. **依赖安装位置**
+
+   ```bash
+   # 确保安装在正确的工作区
+   cd apps/web-app
+   pnpm add @assistant-ui/react @assistant-ui/react-ai-sdk
+   ```
+
+2. **API 配置**
+   ```typescript
+   // 确保 runtime 配置正确
+   const runtime = useChatRuntime({
+     // 必要的配置选项
+   });
+   ```
+
+### Nx Monorepo 问题
+
+**常见问题：**
+
+1. **项目依赖关系错误**
+
+   ```bash
+   # 可视化依赖图
+   nx graph
+
+   # 检查项目配置
+   nx show project @wenshu/ui
+   ```
+
+2. **缓存问题**
+   ```bash
+   # 清理所有缓存
+   nx reset
+   ```
+
+## 📝 问题记录和学习
+
+### 错误日志模板
+
+```markdown
+## 错误描述
+
+- **时间**: [yyyy-mm-dd hh:mm]
+- **错误类型**: [TypeScript/Build/Runtime]
+- **影响范围**: [具体文件/模块]
+
+## 错误信息
+```
+
+[完整的错误信息和堆栈]
+
+```
+
+## 排查过程
+1. [具体的排查步骤]
+2. [尝试的解决方案]
+3. [最终的解决方案]
+
+## 经验教训
+- [根本原因分析]
+- [预防措施]
+- [相关文档/规范更新]
+```
+
+### 知识库维护
+
+**每次解决问题后必须：**
+
+- [ ] 更新相关的规范文档
+- [ ] 添加到检查清单
+- [ ] 分享给团队成员
+- [ ] 考虑是否需要自动化检查
+
+## 🚀 效率优化
+
+### 快捷调试脚本
+
+创建 `scripts/debug.sh`：
+
+```bash
+#!/bin/bash
+
+echo "🔍 开始系统性问题排查..."
+
+echo "1. 检查 Node.js 和包管理器版本"
+node --version
+pnpm --version
+
+echo "2. 检查工作区状态"
+nx graph --file=graph.json > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+    echo "✅ 工作区状态正常"
+else
+    echo "❌ 工作区配置有问题"
+    exit 1
+fi
+
+echo "3. 检查路径导入问题"
+WRONG_IMPORTS=$(find libs -name "*.tsx" -exec grep -l "@/" {} \; 2>/dev/null)
+if [ ! -z "$WRONG_IMPORTS" ]; then
+    echo "❌ 发现错误的导入路径："
+    echo "$WRONG_IMPORTS"
+else
+    echo "✅ 路径导入正确"
+fi
+
+echo "4. 运行类型检查"
+pnpm exec nx typecheck @wenshu/web-app
+if [ $? -eq 0 ]; then
+    echo "✅ 类型检查通过"
+else
+    echo "❌ 类型检查失败"
+    exit 1
+fi
+
+echo "🎉 基础检查完成！"
+```
+
+---
+
+**记住：系统性思考和分析比快速修复更重要！每个问题都是学习和改进的机会。**

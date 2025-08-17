@@ -79,8 +79,12 @@ playwright/.cache/
 .tmp
 
 # Cursor-specific (already present, keeping)
-.cursor/rules/nx-rules.mdc
-.github/instructions/nx.instructions.md
+# .cursor/rules/nx-rules.mdc
+# .github/instructions/nx.instructions.md
+
+.kiro
+.augment
+.github
 
 vite.config.*.timestamp*
 vitest.config.*.timestamp*

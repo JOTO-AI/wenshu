@@ -1,5 +1,11 @@
 {
   "name": "@wenshu/web-app",
   "version": "0.0.1",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "@assistant-ui/react": "^0.10.42",
+    "@assistant-ui/react-ai-sdk": "^1.0.2",
+    "@wenshu/ui": "workspace:*",
+    "ai": "^5.0.15"
+  }
 }

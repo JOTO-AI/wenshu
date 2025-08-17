@@ -1,0 +1,304 @@
+---
+description: 'TypeScript 前端开发和组件库集成规范'
+globs: ['**/*.tsx', '**/*.ts', '**/tsconfig.json', '**/vite.config.ts']
+alwaysApply: true
+---
+
+# TypeScript 前端开发规范
+
+## 🚨 核心原则：防止循环依赖和路径错误
+
+**本规范基于实际踩坑经验，必须严格遵循！**
+
+## 📁 路径映射和导入规范
+
+### 绝对路径 vs 相对路径使用规则
+
+```typescript
+// ✅ 推荐：同一目录内组件使用相对路径
+// 文件：libs/ui/src/components/ui/button.tsx
+import { Input } from './input';
+import { Card } from './card';
+
+// ✅ 推荐：跨目录使用相对路径
+// 文件：libs/ui/src/components/ui/dialog.tsx
+import { cn } from '../../lib/utils';
+
+// ✅ 推荐：应用层使用工作区别名
+// 文件：apps/web-app/src/components/MyComponent.tsx
+import { Button, Card } from '@wenshu/ui';
+```
+
+### ❌ 禁止的导入模式
+
+```typescript
+// ❌ 禁止：在库内部使用 @/ 路径别名
+// 这会导致循环依赖和构建错误
+import { Button } from '@/components/ui/button'; // 在 libs/ui 内部
+
+// ❌ 禁止：跨工作区直接路径导入
+// 文件：apps/web-app/src/components/MyComponent.tsx
+import { Button } from '../../../libs/ui/src/components/ui/button';
+
+// ❌ 禁止：混合使用不同的导入风格
+import { Button } from './button';
+import { Card } from '@/components/ui/card'; // 同一文件内不要混用
+```
+
+## 🔧 组件库开发规范
+
+### shadcn-ui 组件集成规范
+
+**安装后必须检查的配置项：**
+
+1. **components.json 配置**
+
+```json
+{
+  "aliases": {
+    "components": "@/components", // ⚠️ 这个在库内部不使用
+    "utils": "@/lib/utils" // ⚠️ 库内部用相对路径
+  }
+}
+```
+
+2. **批量修复导入路径脚本**
+
+```bash
+# 修复所有 @/ 导入为相对路径
+find libs/ui/src/components/ui -name "*.tsx" -exec sed -i '' 's|@/components/ui/|./|g' {} \;
+find libs/ui/src/components/ui -name "*.tsx" -exec sed -i '' 's|@/lib/utils|../../lib/utils|g' {} \;
+```
+
+### Assistant UI 集成规范
+
+```typescript
+// ✅ 正确的 Assistant UI 使用方式
+import { Thread, AssistantRuntimeProvider } from '@assistant-ui/react';
+import { useChatRuntime } from '@assistant-ui/react-ai-sdk';
+
+function ChatPage() {
+  const runtime = useChatRuntime({
+    // 配置选项
+  });
+
+  return (
+    <AssistantRuntimeProvider runtime={runtime}>
+      <Thread />
+    </AssistantRuntimeProvider>
+  );
+}
+
+// ❌ 禁止：重复造轮子
+// 不要创建 ChatInterface, Message, Composer 等组件
+```
+
+## 🛠️ 开发流程检查清单
+
+### 每次修改代码后必须执行：
+
+1. **类型检查**
+
+```bash
+pnpm exec nx typecheck @wenshu/web-app
+```
+
+2. **构建验证**
+
+```bash
+pnpm exec nx build @wenshu/web-app
+```
+
+3. **路径导入检查**
+
+```bash
+# 检查是否有错误的 @/ 导入
+grep -r "@/" libs/ui/src/components/ui/ --include="*.tsx"
+# 输出应该为空
+```
+
+### 添加新组件时的检查清单：
+
+- [ ] 是否使用了正确的导入路径（相对路径）？
+- [ ] 是否避免了循环依赖？
+- [ ] 是否更新了 `libs/ui/src/index.ts` 的导出？
+- [ ] 是否运行了类型检查和构建验证？
+- [ ] 是否遵循了现有的组件结构模式？
+
+## 📦 工作区架构规范
+
+### 依赖关系规则
+
+```
+apps/web-app           → 可以依赖 libs/*
+libs/ui               → 可以依赖 其他 libs（避免循环）
+libs/shared-types     → 纯类型库，不依赖其他 libs
+libs/api-client       → 可以依赖 libs/shared-types
+```
+
+### tsconfig.json 配置标准
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@wenshu/ui": ["libs/ui/src/index.ts"],
+      "@wenshu/shared-types": ["libs/shared-types/src/index.ts"],
+      "@wenshu/api-client": ["libs/api-client/src/index.ts"]
+    }
+  }
+}
+```
+
+## 🚨 常见错误和解决方案
+
+### 错误 1: "Cannot apply unknown utility class"
+
+**原因**: Tailwind CSS v4 兼容性问题
+**解决**: 使用 CSS 属性而不是 `@apply`
+
+```css
+/* ❌ 错误 */
+@apply border-border;
+
+/* ✅ 正确 */
+border-color: hsl(var(--border));
+```
+
+### 错误 2: "Cannot find module '@assistant-ui/react'"
+
+**原因**: 依赖未安装到正确的工作区
+**解决**:
+
+```bash
+cd apps/web-app
+pnpm add @assistant-ui/react @assistant-ui/react-ai-sdk
+```
+
+### 错误 3: 循环依赖错误
+
+**原因**: 组件内部使用了 @/ 路径别名
+**解决**: 使用相对路径导入
+
+```typescript
+// ❌ 错误
+import { Button } from '@/components/ui/button';
+
+// ✅ 正确
+import { Button } from './button';
+```
+
+### 错误 4: "Failed to fetch dynamically imported module"
+
+**原因**: 运行时路径解析错误
+**解决**: 检查 Vite 配置和路径别名设置
+
+## 🔍 调试技巧
+
+### 1. 快速诊断导入问题
+
+```bash
+# 查找所有可能的问题导入
+find . -name "*.tsx" -o -name "*.ts" | xargs grep -l "@/" | grep -E "(libs/ui|libs/)"
+```
+
+### 2. 检查依赖关系
+
+```bash
+# 使用 Nx 可视化依赖图
+nx graph
+```
+
+### 3. 验证构建产物
+
+```bash
+# 检查构建后的文件结构
+ls -la apps/web-app/dist/
+ls -la libs/ui/dist/
+```
+
+## 📚 最佳实践示例
+
+### 创建新的 UI 组件
+
+```typescript
+// 文件：libs/ui/src/components/ui/my-component.tsx
+import * as React from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '../../lib/utils';
+import { Button } from './button'; // 相对路径
+
+const myComponentVariants = cva('base-styles', {
+  variants: {
+    variant: {
+      default: 'default-styles',
+      secondary: 'secondary-styles',
+    },
+  },
+  defaultVariants: {
+    variant: 'default',
+  },
+});
+
+export interface MyComponentProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof myComponentVariants> {
+  // 组件特定的 props
+}
+
+const MyComponent = React.forwardRef<HTMLDivElement, MyComponentProps>(
+  ({ className, variant, ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn(myComponentVariants({ variant }), className)}
+        {...props}
+      />
+    );
+  }
+);
+
+MyComponent.displayName = 'MyComponent';
+
+export { MyComponent, myComponentVariants };
+```
+
+### 更新导出文件
+
+```typescript
+// 文件：libs/ui/src/index.ts
+export { MyComponent, myComponentVariants } from './components/ui/my-component';
+export type { MyComponentProps } from './components/ui/my-component';
+```
+
+## 🎯 质量保证
+
+### 自动化检查脚本
+
+```bash
+#!/bin/bash
+# 文件：scripts/quality-check.sh
+
+echo "🔍 检查路径导入..."
+WRONG_IMPORTS=$(find libs/ui/src/components/ui -name "*.tsx" -exec grep -l "@/" {} \;)
+if [ ! -z "$WRONG_IMPORTS" ]; then
+  echo "❌ 发现错误的导入路径："
+  echo "$WRONG_IMPORTS"
+  exit 1
+fi
+
+echo "✅ 路径检查通过"
+
+echo "🔍 运行类型检查..."
+pnpm exec nx typecheck @wenshu/web-app || exit 1
+
+echo "🔍 运行构建检查..."
+pnpm exec nx build @wenshu/web-app || exit 1
+
+echo "🎉 所有检查通过！"
+```
+
+---
+
+**记住：这些规范是基于实际踩坑经验总结的，严格遵循可以避免 90% 的常见错误！**

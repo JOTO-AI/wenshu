@@ -135,5 +135,8 @@
   // Nx 设置
   "nxConsole.showNodeVersionOnStartup": false,
   "nxConsole.enableTelemetry": false,
-  "nxConsole.generateAiAgentRules": true
+  "nxConsole.generateAiAgentRules": true,
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }

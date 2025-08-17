@@ -1,0 +1,384 @@
+---
+description: "Python 和 FastAPI 开发规范"
+globs: ["**/*.py", "**/pyproject.toml", "**/requirements*.txt"]
+alwaysApply: false
+---
+
+# Python & FastAPI 开发规范
+
+## Python 代码规范
+
+### 代码风格
+- 遵循 PEP 8 标准
+- 使用 Black 进行代码格式化
+- 使用 isort 整理导入语句
+- 使用 mypy 进行静态类型检查
+
+```python
+# ✅ 推荐的导入顺序
+# 标准库导入
+from typing import Optional, List
+import os
+import sys
+
+# 第三方库导入
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+
+# 本地导入
+from .models import User
+from .database import get_db
+```
+
+### 类型注解
+- 所有函数都应该有类型注解
+- 使用 `typing` 模块的类型
+- 为复杂类型创建类型别名
+
+```python
+# ✅ 推荐
+from typing import Dict, List, Optional, Union
+
+UserID = str
+UserData = Dict[str, Union[str, int]]
+
+def get_user(user_id: UserID) -> Optional[User]:
+    """获取用户信息"""
+    return db.get_user(user_id)
+
+async def create_users(users: List[User]) -> List[UserID]:
+    """批量创建用户"""
+    return await db.create_users(users)
+```
+
+### 错误处理
+```python
+# ✅ 推荐的错误处理
+from typing import Optional
+import logging
+
+logger = logging.getLogger(__name__)
+
+class UserNotFoundError(Exception):
+    """用户未找到异常"""
+    pass
+
+async def get_user_safely(user_id: str) -> Optional[User]:
+    try:
+        user = await db.get_user(user_id)
+        return user
+    except DatabaseError as e:
+        logger.error(f"Database error when getting user {user_id}: {e}")
+        return None
+    except Exception as e:
+        logger.exception(f"Unexpected error when getting user {user_id}")
+        raise
+```
+
+## FastAPI 应用架构
+
+### 项目结构
+```
+src/
+├── main.py              # 应用入口
+├── core/
+│   ├── config.py        # 配置管理
+│   ├── database.py      # 数据库连接
+│   ├── dependencies.py  # 依赖注入
+│   └── security.py      # 安全相关
+├── auth/
+│   ├── models.py        # 数据模型
+│   ├── schemas.py       # Pydantic 模型
+│   ├── router.py        # 路由定义
+│   └── service.py       # 业务逻辑
+└── users/
+    ├── models.py
+    ├── schemas.py
+    ├── router.py
+    └── service.py
+```
+
+### 路由定义
+```python
+# ✅ 推荐的路由结构
+from fastapi import APIRouter, Depends, HTTPException, status
+from typing import List
+
+from ..core.dependencies import get_current_user
+from .schemas import UserCreate, UserResponse, UserUpdate
+from .service import UserService
+
+router = APIRouter(prefix="/users", tags=["users"])
+
+@router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+async def create_user(
+    user_data: UserCreate,
+    user_service: UserService = Depends(),
+) -> UserResponse:
+    """创建新用户"""
+    try:
+        user = await user_service.create_user(user_data)
+        return UserResponse.from_orm(user)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
+@router.get("/{user_id}", response_model=UserResponse)
+async def get_user(
+    user_id: str,
+    current_user: User = Depends(get_current_user),
+    user_service: UserService = Depends(),
+) -> UserResponse:
+    """获取用户信息"""
+    user = await user_service.get_user(user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    return UserResponse.from_orm(user)
+```
+
+### Pydantic 模型
+```python
+# ✅ 推荐的 Pydantic 模型
+from pydantic import BaseModel, validator, Field
+from typing import Optional
+from datetime import datetime
+
+class UserBase(BaseModel):
+    """用户基础模型"""
+    email: str = Field(..., description="用户邮箱")
+    username: str = Field(..., min_length=3, max_length=50)
+
+    @validator('email')
+    def validate_email(cls, v):
+        if '@' not in v:
+            raise ValueError('Invalid email format')
+        return v.lower()
+
+class UserCreate(UserBase):
+    """创建用户模型"""
+    password: str = Field(..., min_length=8)
+
+    @validator('password')
+    def validate_password(cls, v):
+        if not any(c.isupper() for c in v):
+            raise ValueError('Password must contain uppercase letter')
+        return v
+
+class UserResponse(UserBase):
+    """用户响应模型"""
+    id: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class UserUpdate(BaseModel):
+    """更新用户模型"""
+    username: Optional[str] = None
+    email: Optional[str] = None
+```
+
+### 依赖注入
+```python
+# ✅ 依赖注入模式
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPBearer
+from sqlalchemy.orm import Session
+
+from .database import get_db
+from .security import verify_token
+
+security = HTTPBearer()
+
+async def get_current_user(
+    token: str = Depends(security),
+    db: Session = Depends(get_db)
+) -> User:
+    """获取当前用户"""
+    try:
+        payload = verify_token(token.credentials)
+        user_id = payload.get("user_id")
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token"
+            )
+
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found"
+            )
+        return user
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials"
+        )
+```
+
+## 数据库操作
+
+### SQLAlchemy 模型
+```python
+# ✅ 推荐的模型定义
+from sqlalchemy import Column, String, DateTime, Boolean, Text
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql import func
+from uuid import uuid4
+
+Base = declarative_base()
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid4()))
+    username = Column(String(50), unique=True, nullable=False, index=True)
+    email = Column(String(255), unique=True, nullable=False, index=True)
+    hashed_password = Column(String(255), nullable=False)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    def __repr__(self) -> str:
+        return f"<User(id={self.id}, username={self.username})>"
+```
+
+### 服务层
+```python
+# ✅ 服务层模式
+from typing import Optional, List
+from sqlalchemy.orm import Session
+from sqlalchemy import and_
+
+class UserService:
+    def __init__(self, db: Session):
+        self.db = db
+
+    async def create_user(self, user_data: UserCreate) -> User:
+        """创建用户"""
+        # 检查用户是否已存在
+        existing_user = self.db.query(User).filter(
+            or_(User.email == user_data.email, User.username == user_data.username)
+        ).first()
+
+        if existing_user:
+            raise ValueError("User already exists")
+
+        # 创建新用户
+        hashed_password = hash_password(user_data.password)
+        user = User(
+            username=user_data.username,
+            email=user_data.email,
+            hashed_password=hashed_password
+        )
+
+        self.db.add(user)
+        self.db.commit()
+        self.db.refresh(user)
+
+        return user
+
+    async def get_user(self, user_id: str) -> Optional[User]:
+        """获取用户"""
+        return self.db.query(User).filter(
+            and_(User.id == user_id, User.is_active == True)
+        ).first()
+
+    async def update_user(self, user_id: str, user_data: UserUpdate) -> Optional[User]:
+        """更新用户"""
+        user = await self.get_user(user_id)
+        if not user:
+            return None
+
+        update_data = user_data.dict(exclude_unset=True)
+        for field, value in update_data.items():
+            setattr(user, field, value)
+
+        self.db.commit()
+        self.db.refresh(user)
+
+        return user
+```
+
+## 测试
+
+### 单元测试
+```python
+# ✅ 测试示例
+import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from ..main import app
+from ..core.database import get_db, Base
+
+# 测试数据库设置
+SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+def override_get_db():
+    db = TestingSessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+app.dependency_overrides[get_db] = override_get_db
+
+@pytest.fixture
+def client():
+    Base.metadata.create_all(bind=engine)
+    with TestClient(app) as c:
+        yield c
+    Base.metadata.drop_all(bind=engine)
+
+def test_create_user(client):
+    response = client.post(
+        "/users/",
+        json={"username": "testuser", "email": "test@example.com", "password": "TestPass123"}
+    )
+    assert response.status_code == 201
+    data = response.json()
+    assert data["username"] == "testuser"
+    assert data["email"] == "test@example.com"
+    assert "id" in data
+```
+
+## 配置管理
+
+### 环境配置
+```python
+# ✅ 配置管理
+from pydantic import BaseSettings
+from typing import Optional
+
+class Settings(BaseSettings):
+    """应用配置"""
+    app_name: str = "智能问答系统"
+    debug: bool = False
+
+    # 数据库配置
+    database_url: str
+
+    # JWT 配置
+    secret_key: str
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
+
+    # CORS 配置
+    allowed_origins: List[str] = ["http://localhost:3000"]
+
+    class Config:
+        env_file = ".env"
+
+settings = Settings()
+```

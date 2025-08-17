@@ -14,7 +14,9 @@ export default [
       '**/.nx',
       '**/coverage',
       '**/out-tsc',
-      '**/apps/api/**', // 忽略 Python 后端目录
+      '**/apps/api/**',
+      '**/vite.config.*.timestamp*',
+      '**/vitest.config.*.timestamp*',
     ],
   },
   {
