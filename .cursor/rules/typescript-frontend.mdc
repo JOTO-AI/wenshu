@@ -136,6 +136,29 @@ libs/shared-types     → 纯类型库，不依赖其他 libs
 libs/api-client       → 可以依赖 libs/shared-types
 ```
 
+### 目录结构规范
+
+**应用层目录结构**：
+```
+apps/web-app/src/
+├── features/               # 按角色和功能分组的模块
+│   ├── client/            # 普通用户功能
+│   │   ├── chat/          # 聊天功能
+│   │   ├── dashboard/     # 仪表板
+│   │   ├── profile/       # 个人设置
+│   │   └── dev/           # 开发工具（如UI测试页面）
+│   └── admin/             # 管理员功能
+├── routes/                # 路由配置
+├── layouts/               # 布局组件
+├── components/            # 应用特定组件
+└── auth/                  # 认证模块
+```
+
+**重要原则**：
+- ✅ 使用统一的 `features/` 架构，避免混合使用 `pages/` 目录
+- ✅ 开发工具和测试页面放在 `features/client/dev/` 下
+- ✅ 保持目录结构的一致性，遵循DRY、KISS、YAGNI原则
+
 ### tsconfig.json 配置标准
 
 ```json

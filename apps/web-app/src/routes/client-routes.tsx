@@ -7,7 +7,7 @@ import { ClientLayout } from '../layouts';
 const ChatPage = lazy(() => import('../features/client/chat/pages'));
 const DashboardPage = lazy(() => import('../features/client/dashboard/pages'));
 const ProfilePage = lazy(() => import('../features/client/profile/pages'));
-const TestUIPage = lazy(() => import('../pages/test-ui'));
+const TestUIPage = lazy(() => import('../features/client/dev/pages/test-ui'));
 
 // 加载中组件
 const LoadingSpinner = () => (
