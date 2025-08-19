@@ -12,9 +12,6 @@ const PermissionsPage = lazy(
 const DataSourcesPage = lazy(
   () => import('../features/admin/datasources/pages')
 );
-const TestSidebarPage = lazy(
-  () => import('../features/admin/test-sidebar/pages')
-);
 const KnowledgePage = lazy(() => import('../features/admin/knowledge/pages'));
 const DatasetsPage = lazy(() => import('../features/admin/datasets/pages'));
 const AuditLogsPage = lazy(() => import('../features/admin/audit-logs/pages'));
@@ -41,7 +38,6 @@ export const AdminRoutes = () => {
             <Route path='/knowledge' element={<KnowledgePage />} />
             <Route path='/datasets' element={<DatasetsPage />} />
             <Route path='/audit-logs' element={<AuditLogsPage />} />
-            <Route path='/test-sidebar' element={<TestSidebarPage />} />
           </Routes>
         </Suspense>
       </AdminLayout>
