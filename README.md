@@ -150,15 +150,14 @@ nx graph
 可在工作区根目录创建 `.env` 来配置端口与跨域：
 
 ```bash
-# 前端端口（默认为 3000 / 4200）
+# 前端端口（默认为 3000）
 WEB_APP_PORT=3000
-ADMIN_APP_PORT=4200
 
 # 后端端口（默认 8000）
 API_PORT=8000
 
 # 允许的跨域来源（与 apps/api/src/main.py 一致）
-CORS_ORIGINS=http://localhost:3000,http://localhost:4200
+CORS_ORIGINS=http://localhost:3000
 ```
 
 ## API 服务
@@ -170,7 +169,7 @@ CORS_ORIGINS=http://localhost:3000,http://localhost:4200
 
 API 文档在开发模式下可通过 http://localhost:8000/docs 访问。
 
-后端已内置 CORS，中默认允许 `http://localhost:3000` 与 `http://localhost:4200`，可通过环境变量 `CORS_ORIGINS` 修改。
+后端已内置 CORS，中默认允许 `http://localhost:3000`，可通过环境变量 `CORS_ORIGINS` 修改。
 
 ## 共享库说明
 

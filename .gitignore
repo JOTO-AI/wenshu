@@ -60,6 +60,7 @@ pip-delete-this-directory.txt
 *.egg-info/
 .installed.cfg
 *.egg
+apps/api/src/__pycache__/
 
 # Logs
 logs
