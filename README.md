@@ -14,9 +14,10 @@
 
 **前端**
 
-- React 19 + TypeScript
+- React 18.3.1 + TypeScript
 - Vite (构建工具)
-- TailwindCSS (样式框架)
+- Tailwind CSS v3.4.15 (样式框架)
+- shadcn-ui (UI 组件库)
 - pnpm (包管理器)
 
 **后端**
@@ -32,7 +33,7 @@
 
 ## 项目结构
 
-```
+```bash
 wenshu/
 ├── apps/                    # 应用目录
 │   ├── web-app/            # 统一React应用（用户端+管理端）
@@ -40,6 +41,8 @@ wenshu/
 ├── libs/                   # 共享库
 │   ├── shared-types/       # TypeScript 类型定义
 │   └── api-client/         # API 客户端库
+├── packages/               # UI 组件库
+│   └── ui/                 # shadcn-ui 组件库
 ├── nx.json                 # Nx 配置
 ├── package.json            # 前端依赖管理
 ├── pnpm-workspace.yaml     # pnpm 工作空间配置
@@ -48,7 +51,7 @@ wenshu/
 
 ### 统一应用架构详情
 
-```
+```bash
 apps/web-app/src/
 ├── features/               # 按角色分组的功能模块
 │   ├── client/            # 普通用户功能
@@ -73,6 +76,7 @@ apps/web-app/src/
 │   └── guards/            # 路由守卫
 ├── auth/                  # 统一认证模块
 ├── shared/                # 共享组件和工具
+├── components/            # 应用级组件和 UI 重导出
 ├── middleware/            # 权限中间件
 └── stores/                # 全局状态管理
 ```
@@ -180,6 +184,15 @@ API 文档在开发模式下可通过 http://localhost:8000/docs 访问。
 ### @wenshu/api-client
 
 统一的 API 客户端库，封装所有后端 API 调用逻辑。
+
+### @workspace/ui
+
+基于 shadcn-ui 的 UI 组件库，提供统一的设计系统和组件：
+
+- 使用 Tailwind CSS v3.4.15 进行样式管理
+- 集成 Radix UI 原语组件
+- 支持暗色主题和响应式设计
+- 提供完整的 TypeScript 类型支持
 
 ## 参考文档
 

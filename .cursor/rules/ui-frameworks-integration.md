@@ -1,5 +1,5 @@
 ---
-description: 'Nx Monorepo UI框架集成规范：shadcn-ui、Tailwind CSS v4、Assistant UI 配置'
+description: 'Nx Monorepo UI框架集成规范：shadcn-ui、Tailwind CSS v3、Assistant UI 配置'
 globs:
   [
     '**/*.tsx',
@@ -14,7 +14,7 @@ globs:
 alwaysApply: true
 ---
 
-# Nx Monorepo UI 框架集成规范
+# Nx Monorepo UI 框架集成规范 (Tailwind CSS v3)
 
 ## 项目架构
 
@@ -24,13 +24,15 @@ alwaysApply: true
 workspace/
 ├── apps/web-app/
 │   ├── src/main.tsx              # 样式导入入口
+│   ├── src/components/ui/        # UI 组件重导出
 │   ├── styles.css                # 应用级样式
-│   ├── tailwind.config.js        # Tailwind配置
-│   └── postcss.config.js         # PostCSS配置
-└── libs/ui/                      # shadcn-ui 组件库
+│   ├── tailwind.config.js        # Tailwind v3 配置
+│   ├── postcss.config.js         # PostCSS 配置
+│   └── components.json           # shadcn-ui 配置
+└── packages/ui/                  # shadcn-ui 组件库
     ├── src/
-    │   ├── components/ui/         # shadcn-ui组件
-    │   ├── styles/globals.css     # 全局样式和CSS变量
+    │   ├── components/            # shadcn-ui组件
+    │   ├── styles/globals.css     # 全局样式和CSS变量 (v3语法)
     │   ├── lib/utils.ts           # cn函数和工具
     │   └── index.ts               # 统一导出
     ├── components.json            # shadcn-ui配置
@@ -43,7 +45,7 @@ workspace/
 // apps/web-app/package.json
 {
   "dependencies": {
-    "@wenshu/ui": "workspace:*"
+    "@workspace/ui": "workspace:*"
   }
 }
 ```
@@ -66,7 +68,7 @@ import './styles.css'; // 必须导入！包含UI库样式
 
 ```css
 /* apps/web-app/src/styles.css */
-@import '@wenshu/ui/styles';
+@import '@workspace/ui/styles/globals.css';
 ```
 
 ### Tailwind 配置

@@ -16,17 +16,17 @@ alwaysApply: true
 
 ```typescript
 // ✅ 推荐：同一目录内组件使用相对路径
-// 文件：libs/ui/src/components/ui/button.tsx
+// 文件：packages/ui/src/components/ui/button.tsx
 import { Input } from './input';
 import { Card } from './card';
 
 // ✅ 推荐：跨目录使用相对路径
-// 文件：libs/ui/src/components/ui/dialog.tsx
+// 文件：packages/ui/src/components/ui/dialog.tsx
 import { cn } from '../../lib/utils';
 
 // ✅ 推荐：应用层使用工作区别名
 // 文件：apps/web-app/src/components/MyComponent.tsx
-import { Button, Card } from '@wenshu/ui';
+import { Button, Card } from '@workspace/ui';
 ```
 
 ### ❌ 禁止的导入模式
@@ -34,11 +34,11 @@ import { Button, Card } from '@wenshu/ui';
 ```typescript
 // ❌ 禁止：在库内部使用 @/ 路径别名
 // 这会导致循环依赖和构建错误
-import { Button } from '@/components/ui/button'; // 在 libs/ui 内部
+import { Button } from '@/components/ui/button'; // 在 packages/ui 内部
 
 // ❌ 禁止：跨工作区直接路径导入
 // 文件：apps/web-app/src/components/MyComponent.tsx
-import { Button } from '../../../libs/ui/src/components/ui/button';
+import { Button } from '../../../packages/ui/src/components/ui/button';
 
 // ❌ 禁止：混合使用不同的导入风格
 import { Button } from './button';
@@ -66,8 +66,8 @@ import { Card } from '@/components/ui/card'; // 同一文件内不要混用
 
 ```bash
 # 修复所有 @/ 导入为相对路径
-find libs/ui/src/components/ui -name "*.tsx" -exec sed -i '' 's|@/components/ui/|./|g' {} \;
-find libs/ui/src/components/ui -name "*.tsx" -exec sed -i '' 's|@/lib/utils|../../lib/utils|g' {} \;
+find packages/ui/src/components/ui -name "*.tsx" -exec sed -i '' 's|@/components/ui/|./|g' {} \;
+find packages/ui/src/components/ui -name "*.tsx" -exec sed -i '' 's|@/lib/utils|../../lib/utils|g' {} \;
 ```
 
 ### Assistant UI 集成规范
