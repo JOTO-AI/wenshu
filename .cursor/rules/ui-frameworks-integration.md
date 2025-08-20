@@ -1,67 +1,96 @@
 ---
-description: 'UI框架集成规范：shadcn-ui、Tailwind CSS v4、Assistant UI 完整配置指南'
-globs: ['**/*.tsx', '**/*.ts', '**/tailwind.config.js', '**/postcss.config.js', '**/vite.config.ts', '**/styles.css', '**/globals.css']
+description: 'Nx Monorepo UI框架集成规范：shadcn-ui、Tailwind CSS v4、Assistant UI 配置'
+globs:
+  [
+    '**/*.tsx',
+    '**/*.ts',
+    '**/tailwind.config.js',
+    '**/postcss.config.js',
+    '**/vite.config.ts',
+    '**/styles.css',
+    '**/globals.css',
+    '**/components.json',
+  ]
 alwaysApply: true
 ---
 
-# UI框架集成规范
+# Nx Monorepo UI 框架集成规范
 
-## 🚨 核心原则：三框架协调配置
+## 项目架构
 
-**本规范基于实际生产环境踩坑经验，解决 shadcn-ui + Tailwind CSS v4 + Assistant UI 集成问题！**
+### 目录结构
 
-## 📋 框架概览
+```bash
+workspace/
+├── apps/web-app/
+│   ├── src/main.tsx              # 样式导入入口
+│   ├── styles.css                # 应用级样式
+│   ├── tailwind.config.js        # Tailwind配置
+│   └── postcss.config.js         # PostCSS配置
+└── libs/ui/                      # shadcn-ui 组件库
+    ├── src/
+    │   ├── components/ui/         # shadcn-ui组件
+    │   ├── styles/globals.css     # 全局样式和CSS变量
+    │   ├── lib/utils.ts           # cn函数和工具
+    │   └── index.ts               # 统一导出
+    ├── components.json            # shadcn-ui配置
+    └── package.json
+```
 
-### 🎨 三大UI框架
-- **shadcn-ui**: 基础组件库（Button、Card、Input等）
-- **Tailwind CSS v4**: 样式框架（新版本配置方式）
-- **Assistant UI**: 聊天界面组件（Thread、Message等）
+### 包依赖设置
 
-### 🔗 集成挑战
-1. **样式文件导入顺序**：影响CSS优先级和变量定义
-2. **Tailwind v4 配置**：新版本配置方式与v3不同
-3. **自定义颜色生成**：CSS变量到Tailwind类的映射
-4. **框架间兼容性**：避免样式冲突和重复定义
+```json
+// apps/web-app/package.json
+{
+  "dependencies": {
+    "@wenshu/ui": "workspace:*"
+  }
+}
+```
 
-## 🛠️ 核心配置文件
+## 核心配置
 
-### 1. 样式文件导入（关键！）
+### 样式文件导入
 
-**apps/web-app/src/main.tsx**
+#### 主入口
+
 ```typescript
+// apps/web-app/src/main.tsx
 import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
 import App from './app/app';
-import './styles.css'; // ✅ 必须导入！
-
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
+import './styles.css'; // 必须导入！包含UI库样式
 ```
 
-**apps/web-app/src/styles.css**
+#### 样式导入
+
 ```css
-/* Import UI library styles (includes Tailwind directives) */
+/* apps/web-app/src/styles.css */
 @import '@wenshu/ui/styles';
-
-/* You can add global styles to this file, and also import other style files */
 ```
 
-### 2. Tailwind CSS v4 配置
+### Tailwind 配置
 
-**apps/web-app/tailwind.config.js**
+#### Tailwind 设置
+
 ```javascript
-/** @type {import('tailwindcss').Config} */
+// apps/web-app/tailwind.config.js
+const { createGlobPatternsForDependencies } = require('@nx/react/tailwind');
+const { join } = require('path');
+
 module.exports = {
-  darkMode: ['class'], // ✅ 支持暗色模式
+  darkMode: ['class'],
   content: [
-    join(__dirname, '{src,pages,components,app}/**/*!(*.stories|*.spec).{ts,tsx,html}'),
-    join(__dirname, '../../libs/ui/src/**/*.{ts,tsx}'), // ✅ 包含UI库
-    ...createGlobPatternsForDependencies(__dirname),
+    join(
+      __dirname,
+      '{src,pages,components,app}/**/*!(*.stories|*.spec).{ts,tsx,html}'
+    ),
+    join(__dirname, '../../libs/ui/src/**/*.{ts,tsx}'), // 包含UI库组件
+    ...createGlobPatternsForDependencies(__dirname), // Nx优化
   ],
   theme: {
-    colors: { // ✅ 注意：直接在 theme.colors 而不是 theme.extend.colors
+    colors: {
+      // 直接在 theme.colors 而不是 theme.extend.colors
       border: 'hsl(var(--border))',
       input: 'hsl(var(--input))',
       ring: 'hsl(var(--ring))',
@@ -75,7 +104,18 @@ module.exports = {
         DEFAULT: 'hsl(var(--secondary))',
         foreground: 'hsl(var(--secondary-foreground))',
       },
-      // ... 其他颜色定义
+      muted: {
+        DEFAULT: 'hsl(var(--muted))',
+        foreground: 'hsl(var(--muted-foreground))',
+      },
+      accent: {
+        DEFAULT: 'hsl(var(--accent))',
+        foreground: 'hsl(var(--accent-foreground))',
+      },
+      card: {
+        DEFAULT: 'hsl(var(--card))',
+        foreground: 'hsl(var(--card-foreground))',
+      },
     },
     extend: {
       borderRadius: {
@@ -89,8 +129,10 @@ module.exports = {
 };
 ```
 
-**apps/web-app/postcss.config.js**
+#### PostCSS 设置
+
 ```javascript
+// apps/web-app/postcss.config.js
 const { join } = require('path');
 
 module.exports = {
@@ -103,10 +145,10 @@ module.exports = {
 };
 ```
 
-### 3. UI库样式配置
+### UI 库样式
 
-**libs/ui/src/styles/globals.css**
 ```css
+/* libs/ui/src/styles/globals.css */
 @import 'tw-animate-css';
 @import 'tailwindcss';
 
@@ -115,10 +157,16 @@ module.exports = {
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
     --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
     --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
     --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
     --radius: 0.5rem;
   }
 
@@ -126,14 +174,18 @@ module.exports = {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
     --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
     --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
     --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
     --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
     --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
   }
-}
 
-@layer base {
   * {
     border-color: hsl(var(--border));
     outline-color: hsl(var(--ring) / 0.5);
@@ -144,7 +196,7 @@ module.exports = {
   }
 }
 
-/* ✅ Tailwind v4 兼容性修复：手动定义自定义颜色类 */
+/* Tailwind v4 兼容性修复：手动定义自定义颜色类 */
 @layer utilities {
   .bg-primary {
     background-color: hsl(var(--primary));
@@ -155,9 +207,6 @@ module.exports = {
   .bg-muted {
     background-color: hsl(var(--muted));
   }
-  .bg-accent {
-    background-color: hsl(var(--accent));
-  }
   .text-primary {
     color: hsl(var(--primary));
   }
@@ -167,21 +216,18 @@ module.exports = {
   .text-muted-foreground {
     color: hsl(var(--muted-foreground));
   }
-  .text-foreground {
-    color: hsl(var(--foreground));
-  }
   .border-border {
     border-color: hsl(var(--border));
   }
 }
 ```
 
-## 🔧 框架特定配置
+## shadcn-ui 配置
 
-### shadcn-ui 配置
+### 配置文件
 
-**libs/ui/components.json**
 ```json
+// libs/ui/components.json
 {
   "$schema": "https://ui.shadcn.com/schema.json",
   "style": "new-york",
@@ -193,6 +239,7 @@ module.exports = {
     "baseColor": "zinc",
     "cssVariables": true
   },
+  "iconLibrary": "lucide",
   "aliases": {
     "components": "./src/components",
     "utils": "./src/lib/utils",
@@ -201,107 +248,112 @@ module.exports = {
 }
 ```
 
-### Assistant UI 集成
+### 开发工作流
 
-**正确的使用方式**：
+```bash
+# 在 UI 库中添加组件
+cd libs/ui
+npx shadcn@latest add button card input
+
+# 更新导出文件
+# libs/ui/src/index.ts
+export { Button } from './components/ui/button';
+export { Card, CardContent, CardHeader } from './components/ui/card';
+
+# 在应用中使用
+import { Button, Card } from '@wenshu/ui';
+```
+
+## Assistant UI 集成
+
+### 基本用法
+
 ```typescript
 import {
   AssistantRuntimeProvider,
   ThreadPrimitive,
   useLocalRuntime,
 } from '@assistant-ui/react';
+import { Card, CardContent, ScrollArea } from '@wenshu/ui';
 
-function ChatPage() {
+function ChatInterface() {
   const runtime = useLocalRuntime({
     async run({ messages }) {
-      // API 调用逻辑
       return { content: [{ type: 'text', text: 'Response' }] };
     },
   });
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
-      <ThreadPrimitive.Root className="h-full">
-        <ThreadPrimitive.Viewport className="h-full p-4">
-          <ThreadPrimitive.Messages />
-        </ThreadPrimitive.Viewport>
-      </ThreadPrimitive.Root>
+      <Card className='h-[600px]'>
+        <CardContent className='p-0'>
+          <ThreadPrimitive.Root>
+            <ScrollArea className='h-[500px]'>
+              <ThreadPrimitive.Viewport className='p-4'>
+                <ThreadPrimitive.Messages />
+              </ThreadPrimitive.Viewport>
+            </ScrollArea>
+          </ThreadPrimitive.Root>
+        </CardContent>
+      </Card>
     </AssistantRuntimeProvider>
   );
 }
 ```
 
-## 🚨 常见问题和解决方案
+## 常见问题解决
 
-### 问题1: 自定义颜色不显示
+### 颜色问题
 
-**症状**: `bg-primary`, `bg-secondary` 等显示为透明
-**原因**: Tailwind CSS v4 不自动生成自定义颜色类
-**解决**: 在 `globals.css` 中手动添加 `@layer utilities` 部分
+在 `libs/ui/src/styles/globals.css` 中添加 `@layer utilities` 自定义颜色类
 
-### 问题2: 样式文件未加载
+### 样式加载
 
-**症状**: 页面完全无样式或使用默认浏览器样式
-**原因**: `main.tsx` 中未导入样式文件
-**解决**: 添加 `import './styles.css'`
+确保在 `apps/web-app/src/main.tsx` 中添加 `import './styles.css'`
 
-### 问题3: PostCSS 解析错误
-
-**症状**: `Missing "./base" specifier in "tailwindcss" package`
-**原因**: 尝试使用 Tailwind v3 的导入方式
-**解决**: 使用 `@import 'tailwindcss'` 而不是 `@import 'tailwindcss/base'`
-
-### 问题4: 组件样式冲突
-
-**症状**: shadcn-ui 和 Assistant UI 组件样式互相覆盖
-**原因**: CSS 优先级和导入顺序问题
-**解决**: 确保正确的导入顺序和使用 CSS layers
-
-## ✅ 开发流程检查清单
-
-### 新项目初始化
-- [ ] 确认 `main.tsx` 中导入了样式文件
-- [ ] 验证 `tailwind.config.js` 配置正确
-- [ ] 检查 `postcss.config.js` 配置
-- [ ] 确认 UI 库的 `globals.css` 包含自定义颜色类
-
-### 添加新组件时
-- [ ] 使用正确的导入路径（相对路径 vs 工作区别名）
-- [ ] 验证组件样式正确显示
-- [ ] 检查是否与现有组件样式冲突
-- [ ] 运行类型检查和构建验证
-
-### 样式修改后
-- [ ] 清理缓存：`rm -rf node_modules/.vite`
-- [ ] 重启开发服务器
-- [ ] 验证所有颜色类正常工作
-- [ ] 检查暗色模式兼容性
-
-### 部署前检查
-- [ ] 运行完整构建：`pnpm exec nx build @wenshu/web-app`
-- [ ] 验证生产环境样式正确
-- [ ] 检查 CSS 文件大小和优化
-- [ ] 确认所有框架功能正常
-
-## 🔍 故障排除命令
+### 依赖问题
 
 ```bash
-# 清理所有缓存
-rm -rf node_modules/.vite && rm -rf apps/web-app/node_modules/.vite
-
+# 重建 UI 库
+pnpm exec nx build ui
 # 重新安装依赖
 pnpm install --frozen-lockfile
-
-# 验证构建
-pnpm exec nx build @wenshu/web-app
-
-# 检查类型
-pnpm exec nx typecheck @wenshu/web-app
-
-# 检查样式文件
-find . -name "*.css" -exec grep -l "tailwindcss" {} \;
 ```
 
----
+### 缓存问题
 
-**记住：UI框架集成的关键是正确的配置顺序和兼容性处理。遇到问题时，先检查配置文件，再检查导入顺序！**
+```bash
+pnpm exec nx reset
+```
+
+## 检查清单
+
+### 项目初始化
+
+- 确认 `main.tsx` 导入样式文件
+- 验证 `tailwind.config.js` 配置
+- 检查 UI 库 `globals.css` 包含自定义颜色类
+- 验证 workspace 依赖配置
+
+### 组件开发
+
+- 在 `libs/ui` 中使用 `npx shadcn@latest add <component>`
+- 更新 `libs/ui/src/index.ts` 导出
+- 运行类型检查：`pnpm exec nx typecheck ui`
+- 在应用中测试组件功能
+
+### 故障排除
+
+```bash
+# 清理缓存
+pnpm exec nx reset
+rm -rf node_modules/.cache
+
+# 重新构建
+pnpm exec nx build ui --skip-nx-cache
+pnpm exec nx build @wenshu/web-app --prod
+
+# 类型检查
+pnpm exec nx typecheck ui
+pnpm exec nx typecheck @wenshu/web-app
+```
