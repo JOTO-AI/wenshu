@@ -1,0 +1,34 @@
+[project]
+name = "datasource-system"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "aiomysql==0.2.0",
+    "alembic==1.12.1",
+    "asyncpg==0.29.0",
+    "casbin==1.22.0",
+    "casbin-sqlalchemy-adapter==1.4.0",
+    "celery==5.3.4",
+    "email-validator>=1.1.0,<2.1",
+    "fastapi==0.104.1",
+    "fastapi-users[oauth,sqlalchemy]==12.1.2",
+    "httpx==0.25.2",
+    "jinja2==3.1.2",
+    "motor==3.3.1",
+    "passlib[bcrypt]==1.7.4",
+    "psycopg2-binary==2.9.9",
+    "pydantic==2.5.0",
+    "pydantic-settings==2.1.0",
+    "pymongo==4.6.0",
+    "pytest==7.4.3",
+    "pytest-asyncio==0.21.1",
+    "python-dotenv==1.0.0",
+    "python-jose[cryptography]==3.3.0",
+    "python-multipart==0.0.6",
+    "redis==5.0.1",
+    "setuptools>=80.9.0",
+    "sqlalchemy==2.0.23",
+    "uvicorn[standard]==0.24.0",
+]
