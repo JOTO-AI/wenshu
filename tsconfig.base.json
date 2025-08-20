@@ -21,7 +21,8 @@
     "paths": {
       "@wenshu/api-client": ["libs/api-client/src/index.ts"],
       "@wenshu/shared-types": ["libs/shared-types/src/index.ts"],
-      "@wenshu/ui": ["libs/ui/src/index.ts"]
+      "@workspace/ui": ["packages/ui/src/index.ts"],
+      "@workspace/ui/*": ["packages/ui/src/*"]
     }
   }
 }

@@ -54,6 +54,9 @@
   "typescript.inlayHints.parameterNames.enabled": "literals",
   "typescript.inlayHints.variableTypes.enabled": false,
   "typescript.inlayHints.functionLikeReturnTypes.enabled": true,
+  "typescript.preferences.includePackageJsonAutoImports": "on",
+  "typescript.workspaceSymbols.scope": "allOpenProjects",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
 
   // ESLint 设置
   "eslint.workingDirectories": ["./"],

@@ -3,7 +3,7 @@ import {
   MessagePrimitive,
   ThreadPrimitive,
 } from '@assistant-ui/react';
-import { Button, cn } from '@wenshu/ui';
+import { Button, cn } from '@workspace/ui';
 import type { FC } from 'react';
 
 interface ThreadProps {

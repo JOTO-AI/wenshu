@@ -1,0 +1,40 @@
+{
+  "folders": [
+    {
+      "name": "Root",
+      "path": "."
+    },
+    {
+      "name": "Web App",
+      "path": "./apps/web-app"
+    },
+    {
+      "name": "UI Library",
+      "path": "./packages/ui"
+    },
+    {
+      "name": "API Client",
+      "path": "./libs/api-client"
+    },
+    {
+      "name": "Shared Types",
+      "path": "./libs/shared-types"
+    }
+  ],
+  "settings": {
+    "typescript.preferences.includePackageJsonAutoImports": "on",
+    "typescript.workspaceSymbols.scope": "allOpenProjects",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "typescript.suggest.autoImports": true,
+    "typescript.updateImportsOnFileMove.enabled": "always"
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-vscode.vscode-typescript-next",
+      "esbenp.prettier-vscode",
+      "ms-vscode.vscode-eslint",
+      "nrwl.angular-console",
+      "bradlc.vscode-tailwindcss"
+    ]
+  }
+}

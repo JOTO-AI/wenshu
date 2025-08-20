@@ -1,7 +1,18 @@
-// 管理端布局组件
-// 用于管理员界面的布局，注重功能性和信息密度
-
+// 智能问数系统 - 管理端布局组件
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+  Separator,
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@workspace/ui';
 import { ReactNode } from 'react';
+import { AdminSidebar } from './components';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -9,27 +20,35 @@ interface AdminLayoutProps {
 
 export const AdminLayout = ({ children }: AdminLayoutProps) => {
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* TODO: 添加管理端布局结构 */}
-      <header className="bg-white shadow-sm border-b">
-        {/* 管理端导航栏 */}
-      </header>
-      
-      <div className="flex">
-        <aside className="w-64 bg-white shadow-sm">
-          {/* 管理端侧边栏 */}
-        </aside>
-        
-        <main className="flex-1 p-6">
-          {/* 面包屑导航 */}
-          <nav className="mb-4">
-            {/* TODO: 添加面包屑导航 */}
-          </nav>
-          
-          {children}
-        </main>
-      </div>
-    </div>
+    <SidebarProvider>
+      <AdminSidebar />
+      <SidebarInset>
+        {/* 管理端头部 */}
+        <header className='flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12'>
+          <div className='flex items-center gap-2 px-4'>
+            <SidebarTrigger className='-ml-1' />
+            <Separator
+              orientation='vertical'
+              className='mr-2 data-[orientation=vertical]:h-4'
+            />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem className='hidden md:block'>
+                  <BreadcrumbLink href='/admin'>智能问数</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className='hidden md:block' />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>管理端</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+        </header>
+
+        {/* 主内容区域 */}
+        <main className='flex flex-1 flex-col gap-4 p-4 pt-0'>{children}</main>
+      </SidebarInset>
+    </SidebarProvider>
   );
 };
 

@@ -13,7 +13,7 @@
       "path": "./libs/api-client"
     },
     {
-      "path": "./libs/ui"
+      "path": "./packages/ui"
     }
   ]
 }

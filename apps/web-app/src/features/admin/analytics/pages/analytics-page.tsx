@@ -1,21 +1,13 @@
 import {
   Badge,
-  BarChart,
+  // BarChart,
   Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-  ChartContainer,
-  LineChart,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@wenshu/ui';
+} from '@workspace/ui';
 
 // 模拟数据
 const mockUserStats = [
@@ -130,7 +122,11 @@ export function AnalyticsPage() {
             <CardDescription>过去6个月的用户增长情况</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer height={300} className='w-full'>
+            {/* Chart temporarily disabled due to component dependencies */}
+            <div className='h-[300px] flex items-center justify-center bg-muted/50 rounded-lg'>
+              <p className='text-muted-foreground'>图表组件暂时不可用</p>
+            </div>
+            {/* <ChartContainer height={300} className='w-full'>
               <LineChart
                 data={mockUserStats.map(item => ({
                   name: item.month,
@@ -139,7 +135,7 @@ export function AnalyticsPage() {
                 xDataKey='name'
                 lines={[{ dataKey: 'value', stroke: '#8884d8' }]}
               />
-            </ChartContainer>
+            </ChartContainer> */}
           </CardContent>
         </Card>
 
@@ -150,7 +146,11 @@ export function AnalyticsPage() {
             <CardDescription>各月用户活动对比</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer height={300} className='w-full'>
+            {/* Chart temporarily disabled due to component dependencies */}
+            <div className='h-[300px] flex items-center justify-center bg-muted/50 rounded-lg'>
+              <p className='text-muted-foreground'>图表组件暂时不可用</p>
+            </div>
+            {/* <ChartContainer height={300} className='w-full'>
               <BarChart
                 data={mockUserStats.map(item => ({
                   name: item.month,
@@ -159,7 +159,7 @@ export function AnalyticsPage() {
                 xDataKey='name'
                 bars={[{ dataKey: 'value', fill: '#8884d8' }]}
               />
-            </ChartContainer>
+            </ChartContainer> */}
           </CardContent>
         </Card>
       </div>
@@ -176,7 +176,11 @@ export function AnalyticsPage() {
           </Button>
         </CardHeader>
         <CardContent>
-          <Table>
+          {/* Table temporarily disabled due to component dependencies */}
+          <div className='text-center text-muted-foreground py-8'>
+            表格组件暂时不可用，正在解决依赖问题...
+          </div>
+          {/* <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>用户</TableHead>
@@ -213,7 +217,7 @@ export function AnalyticsPage() {
                 </TableRow>
               ))}
             </TableBody>
-          </Table>
+          </Table> */}
         </CardContent>
       </Card>
     </div>

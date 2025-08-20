@@ -10,7 +10,7 @@ import {
   Button,
   Card,
   Input,
-} from '@wenshu/ui';
+} from '@workspace/ui';
 
 export default function TestUIPage() {
   const runtime = useLocalRuntime({

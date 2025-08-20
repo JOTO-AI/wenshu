@@ -5,10 +5,12 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(async ({ mode }) => {
   // 从工作区根目录加载环境变量
   const env = loadEnv(mode, path.resolve(__dirname, '../../'), '');
   const port = parseInt(env.WEB_APP_PORT || '3000');
+
+  // Tailwind CSS v3 不需要动态导入
 
   return {
     root: __dirname,
@@ -30,6 +32,12 @@ export default defineConfig(({ mode }) => {
       host: 'localhost',
     },
     plugins: [react(), nxViteTsPaths()],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+        '@workspace/ui': path.resolve(__dirname, '../../packages/ui/src'),
+      },
+    },
     optimizeDeps: {
       include: ['react', 'react-dom'],
       force: false,

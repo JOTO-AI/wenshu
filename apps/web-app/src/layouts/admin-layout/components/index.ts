@@ -1,5 +1,8 @@
-// 管理端布局组件导出
-// TODO: 导出管理端布局相关组件
-// export { AdminHeader } from './admin-header';
-// export { AdminSidebar } from './admin-sidebar';
-// export { Breadcrumb } from './breadcrumb';
+// Sidebar components
+export { AdminSidebar } from './sidebar/admin-sidebar';
+export { NavMain } from './sidebar/nav-main';
+export { NavUser } from './sidebar/nav-user';
+export { TeamSwitcher } from './sidebar/team-switcher';
+
+// Header components (future)
+// export { AdminHeader } from './header/admin-header';

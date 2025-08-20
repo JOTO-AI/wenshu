@@ -5,10 +5,9 @@ import {
   CardHeader,
   CardTitle,
   Separator,
-} from '@wenshu/ui';
+} from '@workspace/ui';
 import { Monitor, Palette, Shield } from 'lucide-react';
 import React from 'react';
-import { LayoutSwitcher } from '../../../../layouts/admin-layout/components';
 
 const SettingsPage: React.FC = () => {
   return (
@@ -38,8 +37,6 @@ const SettingsPage: React.FC = () => {
               自定义您的工作界面，选择最适合的布局模式
             </p>
           </div>
-
-          <LayoutSwitcher />
         </section>
 
         <Separator />

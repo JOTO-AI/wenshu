@@ -13,10 +13,11 @@
     "@radix-ui/react-separator": "^1.1.7",
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tooltip": "^1.2.8",
-    "@wenshu/ui": "workspace:*",
+    "@workspace/ui": "workspace:*",
     "ai": "^5.0.15",
     "class-variance-authority": "^0.7.1",
     "lucide-react": "^0.539.0",
+    "recharts": "2.15.4",
     "swr": "^2.3.6",
     "zustand": "^5.0.7"
   }
