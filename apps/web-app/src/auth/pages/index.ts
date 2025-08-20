@@ -1,4 +1,2 @@
-// 最简单的登录页面 - 遵循KISS原则
-const LoginPage = () => "Login Page - Coming Soon";
-
-export default LoginPage;
+// 认证相关页面导出
+export { LoginPage, default as LoginPageDefault } from './login-page';
