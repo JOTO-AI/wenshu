@@ -7,14 +7,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from .auth.router import router as auth_router
 from .chat.router import router as chat_router
 from .users.router import router as users_router
+from .chat.service import chat_service
+from .core.config import settings
 
 app = FastAPI(
     title="智能问数 API", description="企业级私有化对话式数据分析平台", version="1.0.0"
 )
 
-# 从环境变量获取 CORS 配置
-cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000")
-allowed_origins = [origin.strip() for origin in cors_origins.split(",")]
+# 从配置获取 CORS 配置
+allowed_origins = [origin.strip() for origin in settings.cors_origins.split(",")]
 
 # CORS配置
 app.add_middleware(
@@ -29,6 +30,15 @@ app.add_middleware(
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(chat_router, prefix="/api/v1")
 app.include_router(users_router, prefix="/api/v1")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """应用关闭时的清理工作"""
+    try:
+        await chat_service.close()
+    except Exception as e:
+        print(f"Error during shutdown: {e}")
 
 
 @app.get("/")
