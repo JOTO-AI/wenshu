@@ -9,15 +9,15 @@ import {
   CardTitle,
 } from '@workspace/ui';
 
-// 模拟数据
-const mockUserStats = [
-  { month: '1月', users: 1200, growth: '+15%' },
-  { month: '2月', users: 1380, growth: '+12%' },
-  { month: '3月', users: 1550, growth: '+18%' },
-  { month: '4月', users: 1420, growth: '-8%' },
-  { month: '5月', users: 1680, growth: '+22%' },
-  { month: '6月', users: 1890, growth: '+15%' },
-];
+// 模拟数据 - 暂时未使用但保留供后续图表功能
+// const mockUserStats = [
+//   { month: '1月', users: 1200, growth: '+15%' },
+//   { month: '2月', users: 1380, growth: '+12%' },
+//   { month: '3月', users: 1550, growth: '+18%' },
+//   { month: '4月', users: 1420, growth: '-8%' },
+//   { month: '5月', users: 1680, growth: '+22%' },
+//   { month: '6月', users: 1890, growth: '+15%' },
+// ];
 
 const mockSystemStats = [
   {
@@ -46,36 +46,37 @@ const mockSystemStats = [
   },
 ];
 
-const mockRecentActivities = [
-  {
-    id: 1,
-    user: '张三',
-    action: '执行SQL查询',
-    time: '2分钟前',
-    status: 'success' as const,
-  },
-  {
-    id: 2,
-    user: '李四',
-    action: '生成数据报表',
-    time: '5分钟前',
-    status: 'success' as const,
-  },
-  {
-    id: 3,
-    user: '王五',
-    action: '创建图表',
-    time: '10分钟前',
-    status: 'pending' as const,
-  },
-  {
-    id: 4,
-    user: '赵六',
-    action: '数据导出',
-    time: '15分钟前',
-    status: 'failed' as const,
-  },
-];
+// 暂时未使用但保留供后续活动列表功能
+// const mockRecentActivities = [
+//   {
+//     id: 1,
+//     user: '张三',
+//     action: '执行SQL查询',
+//     time: '2分钟前',
+//     status: 'success' as const,
+//   },
+//   {
+//     id: 2,
+//     user: '李四',
+//     action: '生成数据报表',
+//     time: '5分钟前',
+//     status: 'success' as const,
+//   },
+//   {
+//     id: 3,
+//     user: '王五',
+//     action: '创建图表',
+//     time: '10分钟前',
+//     status: 'pending' as const,
+//   },
+//   {
+//     id: 4,
+//     user: '赵六',
+//     action: '数据导出',
+//     time: '15分钟前',
+//     status: 'failed' as const,
+//   },
+// ];
 
 export function AnalyticsPage() {
   return (
