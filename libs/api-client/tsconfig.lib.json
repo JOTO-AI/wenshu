@@ -11,7 +11,7 @@
     "forceConsistentCasingInFileNames": true,
     "types": ["node"],
     "paths": {
-      "@wenshu/shared-types": ["../shared-types/src/index.ts"]
+      "@wenshu/shared-types": ["../shared-types/dist/index.d.ts"]
     }
   },
   "include": ["src/**/*.ts"],

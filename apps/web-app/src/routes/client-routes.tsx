@@ -18,18 +18,30 @@ const LoadingSpinner = () => (
 
 export const ClientRoutes = () => {
   return (
-    <ClientLayout>
-      <Suspense fallback={<LoadingSpinner />}>
-        <Routes>
-          <Route path='/chat' element={<ChatPage />} />
-          <Route path='/dashboard' element={<DashboardPage />} />
-          <Route path='/profile' element={<ProfilePage />} />
-          <Route path='/test-ui' element={<TestUIPage />} />
-          {/* 默认重定向到聊天页面 */}
-          <Route path='/' element={<ChatPage />} />
-        </Routes>
-      </Suspense>
-    </ClientLayout>
+    <Suspense fallback={<LoadingSpinner />}>
+      <Routes>
+        {/* 聊天页面使用自己的布局 */}
+        <Route path='/chat' element={<ChatPage />} />
+        <Route path='/' element={<ChatPage />} />
+        
+        {/* 其他页面使用通用客户端布局 */}
+        <Route path='/dashboard' element={
+          <ClientLayout>
+            <DashboardPage />
+          </ClientLayout>
+        } />
+        <Route path='/profile' element={
+          <ClientLayout>
+            <ProfilePage />
+          </ClientLayout>
+        } />
+        <Route path='/test-ui' element={
+          <ClientLayout>
+            <TestUIPage />
+          </ClientLayout>
+        } />
+      </Routes>
+    </Suspense>
   );
 };
 

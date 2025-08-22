@@ -1,7 +1,6 @@
 // 路由入口文件
 import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { AuthLayout } from '../layouts';
 import { AuthGuard } from './guards';
 
 // 懒加载路由组件
@@ -9,7 +8,7 @@ const ClientRoutes = lazy(() => import('./client-routes'));
 const AdminRoutes = lazy(() => import('./admin-routes'));
 
 // 懒加载认证页面
-const LoginPage = lazy(() => import('../auth/pages'));
+const LoginPage = lazy(() => import('../auth/pages/login-page'));
 
 // 全局加载组件
 const GlobalLoadingSpinner = () => (
@@ -23,14 +22,7 @@ export const AppRoutes = () => {
     <Suspense fallback={<GlobalLoadingSpinner />}>
       <Routes>
         {/* 认证路由 */}
-        <Route
-          path='/login'
-          element={
-            <AuthLayout>
-              <LoginPage />
-            </AuthLayout>
-          }
-        />
+        <Route path='/login' element={<LoginPage />} />
 
         {/* 管理端路由 - 需要管理员权限 */}
         <Route path='/admin/*' element={<AdminRoutes />} />

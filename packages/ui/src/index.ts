@@ -1,4 +1,43 @@
 // Export utilities
+// export {
+//   Sheet,
+//   SheetClose,
+//   SheetContent,
+//   SheetDescription,
+//   SheetFooter,
+//   SheetHeader,
+//   SheetOverlay,
+//   SheetPortal,
+//   SheetTitle,
+//   SheetTrigger,
+// } from './components/sheet';
+// export {
+//   Table,
+//   TableBody,
+//   TableCaption,
+//   TableCell,
+//   TableFooter,
+//   TableHead,
+//   TableHeader,
+//   TableRow,
+// } from './components/table';
+
+// Dialog components - temporarily disabled due to lucide-react dependency
+// export {
+//   Dialog,
+//   DialogClose,
+//   DialogContent,
+//   DialogDescription,
+//   DialogFooter,
+//   DialogHeader,
+//   DialogOverlay,
+//   DialogPortal,
+//   DialogTitle,
+//   DialogTrigger,
+// } from './components/dialog';
+
+// Export styles
+import './styles/globals.css';
 export { cn } from './lib/utils';
 
 // Export hooks
@@ -17,6 +56,7 @@ export {
   CardTitle,
 } from './components/card';
 export { Input } from './components/input';
+export { Label } from './components/label';
 
 // Core sidebar components - now enabled with all dependencies installed
 export {
@@ -89,42 +129,3 @@ export {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from './components/breadcrumb';
-// export {
-//   Sheet,
-//   SheetClose,
-//   SheetContent,
-//   SheetDescription,
-//   SheetFooter,
-//   SheetHeader,
-//   SheetOverlay,
-//   SheetPortal,
-//   SheetTitle,
-//   SheetTrigger,
-// } from './components/sheet';
-// export {
-//   Table,
-//   TableBody,
-//   TableCaption,
-//   TableCell,
-//   TableFooter,
-//   TableHead,
-//   TableHeader,
-//   TableRow,
-// } from './components/table';
-
-// Dialog components - temporarily disabled due to lucide-react dependency
-// export {
-//   Dialog,
-//   DialogClose,
-//   DialogContent,
-//   DialogDescription,
-//   DialogFooter,
-//   DialogHeader,
-//   DialogOverlay,
-//   DialogPortal,
-//   DialogTitle,
-//   DialogTrigger,
-// } from './components/dialog';
-
-// Export styles
-import './styles/globals.css';

@@ -19,10 +19,10 @@
     "target": "es2022",
     "customConditions": ["development"],
     "paths": {
-      "@wenshu/api-client": ["libs/api-client/src/index.ts"],
-      "@wenshu/shared-types": ["libs/shared-types/src/index.ts"],
-      "@workspace/ui": ["packages/ui/src/index.ts"],
-      "@workspace/ui/*": ["packages/ui/src/*"]
+      "@wenshu/api-client": ["libs/api-client/dist/index.d.ts"],
+      "@wenshu/shared-types": ["libs/shared-types/dist/index.d.ts"],
+      "@workspace/ui": ["packages/ui/dist/index.d.ts"],
+      "@workspace/ui/*": ["packages/ui/dist/*"]
     }
   }
 }
