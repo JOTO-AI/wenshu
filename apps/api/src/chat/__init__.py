@@ -4,8 +4,11 @@
 from .router import router
 from .service import chat_service
 from .schemas import (
-    ChatQueryRequest, ChatQueryResponse,
-    FeedbackRequest, ChatHistoryRequest, ChatHistoryResponse
+    ChatQueryRequest,
+    ChatQueryResponse,
+    FeedbackRequest,
+    ChatHistoryRequest,
+    ChatHistoryResponse,
 )
 
 __all__ = [
@@ -15,5 +18,5 @@ __all__ = [
     "ChatQueryResponse",
     "FeedbackRequest",
     "ChatHistoryRequest",
-    "ChatHistoryResponse"
+    "ChatHistoryResponse",
 ]

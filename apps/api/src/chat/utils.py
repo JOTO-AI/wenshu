@@ -3,7 +3,7 @@
 
 import asyncio
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from functools import wraps
 import uuid
 
@@ -22,6 +22,7 @@ def generate_message_id() -> str:
 
 def retry_on_failure(max_retries: int = 3, delay: float = 1.0):
     """异步重试装饰器"""
+
     def decorator(func):
         @wraps(func)
         async def wrapper(*args, **kwargs):
@@ -30,12 +31,18 @@ def retry_on_failure(max_retries: int = 3, delay: float = 1.0):
                     return await func(*args, **kwargs)
                 except Exception as e:
                     if attempt == max_retries - 1:
-                        logger.error(f"Function {func.__name__} failed after {max_retries} attempts: {e}")
+                        logger.error(
+                            f"Function {func.__name__} failed after {max_retries} attempts: {e}"
+                        )
                         raise
-                    logger.warning(f"Attempt {attempt + 1} failed for {func.__name__}: {e}. Retrying in {delay}s...")
+                    logger.warning(
+                        f"Attempt {attempt + 1} failed for {func.__name__}: {e}. Retrying in {delay}s..."
+                    )
                     await asyncio.sleep(delay)
             return None
+
         return wrapper
+
     return decorator
 
 
@@ -63,7 +70,7 @@ def format_dify_response(response: Dict[str, Any]) -> Dict[str, Any]:
         "answer": response.get("answer", ""),
         "message_id": response.get("id"),
         "metadata": response.get("metadata", {}),
-        "created_at": response.get("created_at")
+        "created_at": response.get("created_at"),
     }
 
 

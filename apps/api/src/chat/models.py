@@ -11,6 +11,7 @@ Base = declarative_base()
 
 class ChatSession(Base):
     """聊天会话模型"""
+
     __tablename__ = "chat_sessions"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -24,6 +25,7 @@ class ChatSession(Base):
 
 class QueryHistory(Base):
     """查询历史模型"""
+
     __tablename__ = "query_history"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -41,6 +43,7 @@ class QueryHistory(Base):
 
 class Feedback(Base):
     """用户反馈模型"""
+
     __tablename__ = "feedbacks"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -54,6 +57,7 @@ class Feedback(Base):
 
 class ApiUsage(Base):
     """API 使用统计模型"""
+
     __tablename__ = "api_usage"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))

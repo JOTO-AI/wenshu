@@ -33,7 +33,7 @@
       "name": "Debug Python API",
       "type": "python",
       "request": "launch",
-      "program": "${workspaceFolder}/apps/api/.venv/bin/uvicorn",
+      "program": "${workspaceFolder}/apps/api/.venv/Scripts/uvicorn.exe",
       "args": [
         "src.main:app",
         "--reload",

@@ -2,11 +2,14 @@
 # 处理自然语言理解、SQL生成、数据查询、图表生成等核心业务逻辑
 
 import logging
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any
 from .chat_service import DifyService
 from .schemas import (
-    ChatQueryRequest, ChatQueryResponse, FeedbackRequest,
-    ChatHistoryRequest, ChatHistoryResponse, MessageInfo
+    ChatQueryRequest,
+    FeedbackRequest,
+    ChatHistoryRequest,
+    ChatHistoryResponse,
+    MessageInfo,
 )
 from .exceptions import ChatException, ValidationError
 from .utils import sanitize_query, format_dify_response, validate_user_id
@@ -18,6 +21,7 @@ except ImportError:
     # 如果相对导入失败，尝试绝对导入
     import sys
     import os
+
     sys.path.append(os.path.dirname(os.path.dirname(__file__)))
     from core.config import settings
 
@@ -44,7 +48,7 @@ class ChatService:
             self.query_dify_service = DifyService(
                 base_url=settings.dify_base_url,
                 api_key=settings.dify_api_key.get_secret_value(),
-                timeout=settings.chat_request_timeout
+                timeout=settings.chat_request_timeout,
             )
 
             # 分析服务
@@ -52,7 +56,7 @@ class ChatService:
                 self.analysis_dify_service = DifyService(
                     base_url=settings.dify_base_url,
                     api_key=settings.dify_analysis_api_key.get_secret_value(),
-                    timeout=settings.chat_request_timeout
+                    timeout=settings.chat_request_timeout,
                 )
             else:
                 # 如果没有分析API密钥，使用同一个服务
@@ -91,7 +95,7 @@ class ChatService:
                 inputs=request.inputs,
                 stream=request.stream,
                 files=request.files,
-                user=request.user
+                user=request.user,
             )
 
             # 流式响应直接返回生成器
@@ -134,7 +138,7 @@ class ChatService:
                 inputs=request.inputs,
                 stream=request.stream,
                 files=request.files,
-                user=request.user
+                user=request.user,
             )
 
             # 流式响应直接返回生成器
@@ -171,7 +175,7 @@ class ChatService:
             response = await self.query_dify_service.get_messages(
                 user=request.user,
                 conversation_id=request.conversation_id,
-                limit=request.limit
+                limit=request.limit,
             )
 
             # 转换为标准格式
@@ -183,7 +187,7 @@ class ChatService:
             return ChatHistoryResponse(
                 limit=response.get("limit", request.limit),
                 has_more=response.get("has_more", False),
-                data=messages
+                data=messages,
             )
 
         except Exception as e:
@@ -217,7 +221,7 @@ class ChatService:
                 message_id=request.message_id,
                 rating=request.rating,
                 user=request.user,
-                content=request.content
+                content=request.content,
             )
 
             return response
@@ -251,8 +255,7 @@ class ChatService:
             logger.info(f"Getting suggested questions for message: {message_id}")
 
             questions = await self.query_dify_service.get_suggested_questions(
-                message_id=message_id,
-                user=user
+                message_id=message_id, user=user
             )
 
             return questions
@@ -279,7 +282,10 @@ class ChatService:
             if self.query_dify_service:
                 await self.query_dify_service.close()
 
-            if self.analysis_dify_service and self.analysis_dify_service != self.query_dify_service:
+            if (
+                self.analysis_dify_service
+                and self.analysis_dify_service != self.query_dify_service
+            ):
                 await self.analysis_dify_service.close()
 
         except Exception as e:
