@@ -69,9 +69,10 @@ docker-compose*
 # GitHub Actions
 .github/
 
-# 测试文件
+# 测试文件（但保留tsconfig配置文件）
 **/*.test.*
 **/*.spec.*
+!**/tsconfig.spec.json
 **/test/
 **/tests/
 **/__tests__/
