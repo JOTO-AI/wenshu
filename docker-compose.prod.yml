@@ -4,11 +4,7 @@ services:
   # 后端API服务 - 使用预构建镜像
   api:
     image: wenshu-api:latest
-    # 移除build配置，使用预构建的镜像
-    build: null
 
   # 前端Web应用 - 使用预构建镜像  
   web:
     image: wenshu-web:latest
-    # 移除build配置，使用预构建的镜像
-    build: null

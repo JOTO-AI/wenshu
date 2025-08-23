@@ -17,7 +17,7 @@ COPY packages/ ./packages/
 COPY apps/web-app/ ./apps/web-app/
 
 # 安装依赖
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # 构建应用
 RUN pnpm exec nx build web-app
