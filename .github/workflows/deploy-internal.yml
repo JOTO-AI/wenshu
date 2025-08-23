@@ -148,9 +148,9 @@ jobs:
         run: |
           echo "📤 传输文件到目标服务器"
 
-          # 创建部署目录
+          # 创建部署目录（先尝试无sudo，失败则使用sudo）
           sshpass -p "${{ secrets.DEPLOY_PASSWORD }}" ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
-            "sudo mkdir -p ${{ secrets.DEPLOY_PATH }}"
+            "mkdir -p ${{ secrets.DEPLOY_PATH }} 2>/dev/null || echo '${{ secrets.DEPLOY_PASSWORD }}' | sudo -S mkdir -p ${{ secrets.DEPLOY_PATH }}"
 
           # 传输Docker镜像（使用-v显示进度）
           echo "📦 传输Docker镜像..."

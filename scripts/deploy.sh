@@ -65,8 +65,8 @@ fi
 
 # 创建必要的目录
 log_info "创建部署目录..."
-sudo mkdir -p "$DEPLOY_PATH"
-sudo mkdir -p "$BACKUP_DIR"
+mkdir -p "$DEPLOY_PATH" 2>/dev/null || sudo mkdir -p "$DEPLOY_PATH"
+mkdir -p "$BACKUP_DIR" 2>/dev/null || sudo mkdir -p "$BACKUP_DIR"
 
 # 进入部署目录
 cd "$DEPLOY_PATH"
