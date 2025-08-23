@@ -150,13 +150,12 @@ CORS_ORIGINS=http://localhost:3001,http://localhost:3000,http://localhost:4200
    DEPLOY_PASSWORD=your-server-password
    ```
 
-   **获取证书指纹**：从本地连接 VPN 失败信息中获取，例如：
+   **证书指纹配置**：
 
    ```bash
-   # 当首次连接VPN时，OpenConnect会显示：
-   # 要在将来信任此服务器，可以添加这个到你的命令行：
-   #     --servercert pin-sha256:your-actual-fingerprint
-   # 复制完整的 pin-sha256:xxxx 作为 VPN_SERVER_CERT 的值
+   # 根据您本地连接VPN时的输出，使用以下指纹：
+   VPN_SERVER_CERT=xxx
+   # 注意：本地电脑和GitHub Actions必须使用完全相同的指纹
    ```
 
 2. **触发部署**:

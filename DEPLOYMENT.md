@@ -50,7 +50,12 @@ openssl s_client -servername your-vpn-server.com -connect your-vpn-server.com:44
   xxd -r -p | base64 | sed 's/^/pin-sha256:/'
 ```
 
-**重要**：每个 VPN 服务器都有唯一的证书指纹，必须使用正确的指纹！
+**重要说明**：
+
+- 每个 VPN 服务器都有唯一的证书指纹
+- 本地电脑和 GitHub Actions 必须使用**完全相同**的指纹
+- 根据您提供的信息，应该使用：`pin-sha256:/aKwHj0Omw7WPTQmVmdH+qhhkafnj1Zb8eSxXTLVjlU=`
+- 这个指纹来自您本地连接 VPN 时的输出，GitHub Actions 中使用相同值即可
 
 #### 服务器部署配置
 

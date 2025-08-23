@@ -34,14 +34,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Cache Docker layers
-        uses: actions/cache@v4
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
-
       # 安装OpenConnect VPN客户端和相关脚本
       - name: Install OpenConnect
         run: |
@@ -80,19 +72,23 @@ jobs:
       - name: Build Docker images
         run: |
           # 构建API镜像
-          docker build \
-            --cache-from=type=local,src=/tmp/.buildx-cache \
-            --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max \
+          docker buildx build \
+            --platform linux/amd64 \
+            --cache-from type=gha \
+            --cache-to type=gha,mode=max \
             -t wenshu-api:${{ github.sha }} \
             -t wenshu-api:latest \
+            --load \
             ./apps/api
 
           # 构建Web镜像
-          docker build \
-            --cache-from=type=local,src=/tmp/.buildx-cache \
-            --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max \
+          docker buildx build \
+            --platform linux/amd64 \
+            --cache-from type=gha \
+            --cache-to type=gha,mode=max \
             -t wenshu-web:${{ github.sha }} \
             -t wenshu-web:latest \
+            --load \
             -f ./apps/web-app/Dockerfile \
             .
 
@@ -194,12 +190,6 @@ jobs:
           if [ -f /var/run/openconnect.pid ]; then
             sudo kill $(cat /var/run/openconnect.pid) || true
           fi
-
-      # 清理构建缓存
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       # 发送部署通知（可选）
       - name: Send deployment notification
