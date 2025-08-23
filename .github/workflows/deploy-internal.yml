@@ -1,0 +1,206 @@
+name: Deploy to Internal Network
+
+on:
+  push:
+    branches:
+      - main
+      - release/*
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'staging' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      # 安装OpenConnect VPN客户端
+      - name: Install OpenConnect
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openconnect
+
+      # 创建VPN配置文件
+      - name: Setup VPN configuration
+        run: |
+          echo "${{ secrets.VPN_PASSWORD }}" | sudo openconnect \
+            --background \
+            --pid-file=/var/run/openconnect.pid \
+            --user="${{ secrets.VPN_USERNAME }}" \
+            --passwd-on-stdin \
+            --no-cert-check \
+            --script=/etc/vpnc/vpnc-script \
+            "${{ secrets.VPN_SERVER }}"
+
+          # 等待VPN连接建立
+          sleep 10
+
+          # 验证VPN连接
+          if ! ping -c 3 "${{ secrets.DEPLOY_HOST }}"; then
+            echo "VPN连接失败，无法访问内网服务器"
+            exit 1
+          fi
+
+      # 构建Docker镜像
+      - name: Build Docker images
+        run: |
+          # 构建API镜像
+          docker build \
+            --cache-from=type=local,src=/tmp/.buildx-cache \
+            --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max \
+            -t wenshu-api:${{ github.sha }} \
+            -t wenshu-api:latest \
+            ./apps/api
+
+          # 构建Web镜像
+          docker build \
+            --cache-from=type=local,src=/tmp/.buildx-cache \
+            --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max \
+            -t wenshu-web:${{ github.sha }} \
+            -t wenshu-web:latest \
+            -f ./apps/web-app/Dockerfile \
+            .
+
+      # 保存镜像到tar文件
+      - name: Save Docker images
+        run: |
+          docker save wenshu-api:latest | gzip > wenshu-api.tar.gz
+          docker save wenshu-web:latest | gzip > wenshu-web.tar.gz
+
+      # 安装sshpass并设置SSH配置
+      - name: Setup SSH with password
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+
+          # 设置SSH配置，禁用密钥认证，启用密码认证
+          cat > ~/.ssh/config << EOF
+          Host ${{ secrets.DEPLOY_HOST }}
+            HostName ${{ secrets.DEPLOY_HOST }}
+            User ${{ secrets.DEPLOY_USER }}
+            PreferredAuthentications password
+            PubkeyAuthentication no
+            PasswordAuthentication yes
+            StrictHostKeyChecking no
+          EOF
+          chmod 600 ~/.ssh/config
+
+      # 传输文件到目标服务器
+      - name: Transfer files to server
+        run: |
+          # 创建部署目录
+          sshpass -p "${{ secrets.DEPLOY_PASSWORD }}" ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "sudo mkdir -p ${{ secrets.DEPLOY_PATH }}"
+
+          # 传输Docker镜像
+          sshpass -p "${{ secrets.DEPLOY_PASSWORD }}" scp wenshu-api.tar.gz wenshu-web.tar.gz \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/"
+
+          # 传输Docker Compose配置
+          sshpass -p "${{ secrets.DEPLOY_PASSWORD }}" scp docker-compose.yml docker.env.example \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/"
+
+          # 传输部署脚本
+          sshpass -p "${{ secrets.DEPLOY_PASSWORD }}" scp scripts/deploy.sh \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/"
+
+      # 在目标服务器上部署
+      - name: Deploy on target server
+        run: |
+          sshpass -p "${{ secrets.DEPLOY_PASSWORD }}" ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" << 'EOF'
+            cd ${{ secrets.DEPLOY_PATH }}
+
+            # 加载Docker镜像
+            docker load < wenshu-api.tar.gz
+            docker load < wenshu-web.tar.gz
+
+            # 设置环境变量
+            if [ ! -f .env ]; then
+              cp docker.env.example .env
+            fi
+
+            # 备份当前运行的容器（如果存在）
+            if docker-compose ps | grep -q "Up"; then
+              docker-compose down --remove-orphans
+            fi
+
+            # 启动新的容器
+            docker-compose up -d
+
+            # 等待服务启动
+            sleep 30
+
+            # 健康检查
+            if ! curl -f http://localhost:8000/health; then
+              echo "API健康检查失败"
+              exit 1
+            fi
+
+            if ! curl -f http://localhost:80/health; then
+              echo "Web健康检查失败"
+              exit 1
+            fi
+
+            echo "部署成功！"
+
+            # 清理旧镜像（保留最新的两个版本）
+            docker image prune -f
+
+            # 显示运行状态
+            docker-compose ps
+          EOF
+
+      # 断开VPN连接
+      - name: Disconnect VPN
+        if: always()
+        run: |
+          if [ -f /var/run/openconnect.pid ]; then
+            sudo kill $(cat /var/run/openconnect.pid) || true
+          fi
+
+      # 清理构建缓存
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      # 发送部署通知（可选）
+      - name: Send deployment notification
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "🚀 部署成功到内网环境: ${{ github.event.inputs.environment || 'staging' }}"
+          else
+            echo "❌ 部署失败: ${{ github.event.inputs.environment || 'staging' }}"
+          fi
+          # 这里可以添加发送到Slack、邮件或其他通知渠道的代码
