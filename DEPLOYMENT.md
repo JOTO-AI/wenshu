@@ -24,6 +24,14 @@
 VPN_SERVER=your-vpn-server.com
 VPN_USERNAME=your-username
 VPN_PASSWORD=your-password
+VPN_SERVER_CERT=pin-sha256:your-server-certificate-fingerprint
+```
+
+**获取证书指纹**：
+
+```bash
+# 在本地连接VPN时，OpenConnect会显示证书指纹
+# 示例：pin-sha256:/aKwHj0Omw7WPTQmVmdH+qhhkafnj1Zb8eSxXTLVjlU=
 ```
 
 #### 服务器部署配置

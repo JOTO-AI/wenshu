@@ -86,10 +86,13 @@
    VPN_SERVER=your-vpn-server.com
    VPN_USERNAME=your-username
    VPN_PASSWORD=your-password
+   VPN_SERVER_CERT=pin-sha256:your-server-certificate-fingerprint
    DEPLOY_HOST=your-internal-server-ip
    DEPLOY_USER=deploy
    DEPLOY_PASSWORD=your-server-password
    ```
+
+   **注意**：VPN_SERVER_CERT 是证书指纹，可在本地连接 VPN 时获取
 
 2. **触发部署**:
    - 推送到 `main` 分支自动部署到 staging

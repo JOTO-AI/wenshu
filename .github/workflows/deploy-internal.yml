@@ -56,7 +56,7 @@ jobs:
             --pid-file=/var/run/openconnect.pid \
             --user="${{ secrets.VPN_USERNAME }}" \
             --passwd-on-stdin \
-            --no-cert-check \
+            --servercert="${{ secrets.VPN_SERVER_CERT }}" \
             --script=/etc/vpnc/vpnc-script \
             "${{ secrets.VPN_SERVER }}"
 

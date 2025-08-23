@@ -8,7 +8,8 @@ import { defineConfig, loadEnv } from 'vite';
 export default defineConfig(async ({ mode }) => {
   // 从工作区根目录加载环境变量
   const env = loadEnv(mode, path.resolve(__dirname, '../../'), '');
-  const port = parseInt(env.WEB_APP_PORT || '3000');
+  // 固定前端端口为3001，确保端口稳定性
+  const port = parseInt(env.WEB_APP_PORT || '3001');
 
   // Tailwind CSS v3 不需要动态导入
 
@@ -18,7 +19,7 @@ export default defineConfig(async ({ mode }) => {
     server: {
       port,
       host: 'localhost',
-      strictPort: false,
+      strictPort: true, // 强制使用指定端口，避免端口不稳定
       open: false,
       hmr: {
         port: port + 1000,
