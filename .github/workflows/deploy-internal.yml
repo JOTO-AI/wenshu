@@ -34,43 +34,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # 安装OpenConnect VPN客户端和相关脚本
-      - name: Install OpenConnect
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y openconnect vpnc-scripts
-
-          # 确保vpnc-script存在并可执行
-          if [ ! -f /etc/vpnc/vpnc-script ]; then
-            sudo mkdir -p /etc/vpnc
-            sudo ln -sf /usr/share/vpnc-scripts/vpnc-script /etc/vpnc/vpnc-script
-          fi
-          sudo chmod +x /etc/vpnc/vpnc-script
-
-      # 创建VPN配置文件
-      - name: Setup VPN configuration
-        run: |
-          echo "${{ secrets.VPN_PASSWORD }}" | sudo openconnect \
-            --background \
-            --pid-file=/var/run/openconnect.pid \
-            --user="${{ secrets.VPN_USERNAME }}" \
-            --passwd-on-stdin \
-            --servercert="${{ secrets.VPN_SERVER_CERT }}" \
-            --script=/etc/vpnc/vpnc-script \
-            "${{ secrets.VPN_SERVER }}"
-
-          # 等待VPN连接建立
-          sleep 10
-
-          # 验证VPN连接
-          if ! ping -c 3 "${{ secrets.DEPLOY_HOST }}"; then
-            echo "VPN连接失败，无法访问内网服务器"
-            exit 1
-          fi
-
-      # 构建Docker镜像
+      # 第一阶段：构建Docker镜像（VPN连接前，避免网络路由问题）
       - name: Build Docker images
         run: |
+          echo "🏗️ 构建Docker镜像（VPN连接前）"
+
           # 构建API镜像
           docker buildx build \
             --platform linux/amd64 \
@@ -92,21 +60,76 @@ jobs:
             -f ./apps/web-app/Dockerfile \
             .
 
+          echo "✅ Docker镜像构建完成"
+
       # 保存镜像到tar文件
       - name: Save Docker images
         run: |
+          echo "📦 保存Docker镜像到文件"
           docker save wenshu-api:latest | gzip > wenshu-api.tar.gz
           docker save wenshu-web:latest | gzip > wenshu-web.tar.gz
 
-      # 安装sshpass并设置SSH配置
-      - name: Setup SSH with password
+          # 显示文件大小
+          ls -lh *.tar.gz
+          echo "✅ 镜像保存完成"
+
+      # 第二阶段：安装必要工具
+      - name: Install required tools
         run: |
+          echo "🔧 安装OpenConnect VPN客户端和相关工具"
           sudo apt-get update
-          sudo apt-get install -y sshpass
+          sudo apt-get install -y openconnect vpnc-scripts sshpass curl
+
+          # 确保vpnc-script存在并可执行
+          if [ ! -f /etc/vpnc/vpnc-script ]; then
+            sudo mkdir -p /etc/vpnc
+            sudo ln -sf /usr/share/vpnc-scripts/vpnc-script /etc/vpnc/vpnc-script
+          fi
+          sudo chmod +x /etc/vpnc/vpnc-script
+          echo "✅ 工具安装完成"
+
+      # 第三阶段：连接VPN
+      - name: Connect to VPN
+        run: |
+          echo "🌐 连接VPN到内网"
+          echo "${{ secrets.VPN_PASSWORD }}" | sudo openconnect \
+            --background \
+            --pid-file=/var/run/openconnect.pid \
+            --user="${{ secrets.VPN_USERNAME }}" \
+            --passwd-on-stdin \
+            --servercert="${{ secrets.VPN_SERVER_CERT }}" \
+            --script=/etc/vpnc/vpnc-script \
+            "${{ secrets.VPN_SERVER }}"
+
+          # 等待VPN连接建立
+          echo "⏳ 等待VPN连接建立..."
+          sleep 15
+
+          # 验证VPN连接
+          echo "🔍 验证VPN连接"
+          for i in {1..3}; do
+            if ping -c 1 "${{ secrets.DEPLOY_HOST }}" > /dev/null 2>&1; then
+              echo "✅ VPN连接成功，可以访问内网服务器"
+              break
+            else
+              echo "⚠️ 第${i}次ping失败，重试..."
+              sleep 5
+            fi
+
+            if [ $i -eq 3 ]; then
+              echo "❌ VPN连接失败，无法访问内网服务器"
+              exit 1
+            fi
+          done
+
+      # 第四阶段：设置SSH
+      - name: Setup SSH configuration
+        run: |
+          echo "🔑 配置SSH连接"
           mkdir -p ~/.ssh
           ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
 
-          # 设置SSH配置，禁用密钥认证，启用密码认证
+          # 设置SSH配置，使用密码认证
           cat > ~/.ssh/config << EOF
           Host ${{ secrets.DEPLOY_HOST }}
             HostName ${{ secrets.DEPLOY_HOST }}
@@ -115,89 +138,131 @@ jobs:
             PubkeyAuthentication no
             PasswordAuthentication yes
             StrictHostKeyChecking no
+            ConnectTimeout 30
           EOF
           chmod 600 ~/.ssh/config
+          echo "✅ SSH配置完成"
 
-      # 传输文件到目标服务器
+      # 第五阶段：传输文件
       - name: Transfer files to server
         run: |
+          echo "📤 传输文件到目标服务器"
+
           # 创建部署目录
           sshpass -p "${{ secrets.DEPLOY_PASSWORD }}" ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
             "sudo mkdir -p ${{ secrets.DEPLOY_PATH }}"
 
-          # 传输Docker镜像
-          sshpass -p "${{ secrets.DEPLOY_PASSWORD }}" scp wenshu-api.tar.gz wenshu-web.tar.gz \
+          # 传输Docker镜像（使用-v显示进度）
+          echo "📦 传输Docker镜像..."
+          sshpass -p "${{ secrets.DEPLOY_PASSWORD }}" scp -v wenshu-api.tar.gz wenshu-web.tar.gz \
             "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/"
 
-          # 传输Docker Compose配置
-          sshpass -p "${{ secrets.DEPLOY_PASSWORD }}" scp docker-compose.yml docker.env.example \
+          # 传输配置文件
+          echo "📄 传输配置文件..."
+          sshpass -p "${{ secrets.DEPLOY_PASSWORD }}" scp -v docker-compose.yml docker.env.example \
             "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/"
 
           # 传输部署脚本
-          sshpass -p "${{ secrets.DEPLOY_PASSWORD }}" scp scripts/deploy.sh \
+          echo "📜 传输部署脚本..."
+          sshpass -p "${{ secrets.DEPLOY_PASSWORD }}" scp -v scripts/deploy.sh \
             "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/"
 
-      # 在目标服务器上部署
+          echo "✅ 文件传输完成"
+
+      # 第六阶段：执行部署
       - name: Deploy on target server
         run: |
+          echo "🚀 在目标服务器上执行部署"
           sshpass -p "${{ secrets.DEPLOY_PASSWORD }}" ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" << 'EOF'
+            set -e
             cd ${{ secrets.DEPLOY_PATH }}
 
+            echo "📍 当前目录: $(pwd)"
+            echo "📂 文件列表:"
+            ls -la
+
             # 加载Docker镜像
+            echo "📥 加载Docker镜像..."
             docker load < wenshu-api.tar.gz
             docker load < wenshu-web.tar.gz
 
             # 设置环境变量
             if [ ! -f .env ]; then
+              echo "⚙️ 创建环境配置文件..."
               cp docker.env.example .env
             fi
 
             # 备份当前运行的容器（如果存在）
-            if docker-compose ps | grep -q "Up"; then
-              docker-compose down --remove-orphans
+            if docker compose ps 2>/dev/null | grep -q "Up"; then
+              echo "🔄 停止现有容器..."
+              docker compose down --remove-orphans
             fi
 
             # 启动新的容器
-            docker-compose up -d
+            echo "🚀 启动容器..."
+            docker compose up -d
 
             # 等待服务启动
+            echo "⏳ 等待服务启动..."
             sleep 30
 
             # 健康检查
-            if ! curl -f http://localhost:8000/health; then
-              echo "API健康检查失败"
+            echo "🏥 执行健康检查..."
+
+            # 检查API健康状态
+            if curl -f http://localhost:8000/health; then
+              echo "✅ API健康检查通过"
+            else
+              echo "❌ API健康检查失败"
+              docker compose logs api
               exit 1
             fi
 
-            if ! curl -f http://localhost:80/health; then
-              echo "Web健康检查失败"
+            # 检查Web健康状态
+            if curl -f http://localhost:80/health; then
+              echo "✅ Web健康检查通过"
+            else
+              echo "❌ Web健康检查失败"
+              docker compose logs web
               exit 1
             fi
 
-            echo "部署成功！"
+            echo "🎉 部署成功！"
 
             # 清理旧镜像（保留最新的两个版本）
+            echo "🧹 清理旧资源..."
             docker image prune -f
 
             # 显示运行状态
-            docker-compose ps
+            echo "📊 容器运行状态:"
+            docker compose ps
+
+            echo "🌐 服务访问地址:"
+            echo "  - API: http://localhost:8000"
+            echo "  - Web: http://localhost:80"
           EOF
 
-      # 断开VPN连接
+      # 第七阶段：断开VPN连接
       - name: Disconnect VPN
         if: always()
         run: |
+          echo "🔌 断开VPN连接"
           if [ -f /var/run/openconnect.pid ]; then
             sudo kill $(cat /var/run/openconnect.pid) || true
+            echo "✅ VPN连接已断开"
+          else
+            echo "ℹ️ 未找到VPN进程"
           fi
 
-      # 发送部署通知（可选）
+      # 第八阶段：发送部署通知
       - name: Send deployment notification
         if: always()
         run: |
           if [ "${{ job.status }}" == "success" ]; then
             echo "🚀 部署成功到内网环境: ${{ github.event.inputs.environment || 'staging' }}"
+            echo "✅ 所有服务正常运行"
           else
             echo "❌ 部署失败: ${{ github.event.inputs.environment || 'staging' }}"
+            echo "🔍 请检查上述日志信息"
           fi
           # 这里可以添加发送到Slack、邮件或其他通知渠道的代码

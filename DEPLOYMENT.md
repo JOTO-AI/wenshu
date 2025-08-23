@@ -119,7 +119,7 @@ DEPLOY_PATH=/opt/wenshu
 
    ```bash
    # 使用Docker Compose
-   docker-compose up -d
+   docker compose up -d
 
    # 或使用部署脚本
    ./scripts/deploy.sh staging
@@ -129,7 +129,7 @@ DEPLOY_PATH=/opt/wenshu
 
    ```bash
    # 检查服务状态
-   docker-compose ps
+   docker compose ps
 
    # 检查健康状态
    curl http://localhost:8000/health
@@ -148,15 +148,15 @@ DEPLOY_PATH=/opt/wenshu
 
 ```bash
 # 查看所有服务日志
-docker-compose logs -f
+docker compose logs -f
 
 # 查看特定服务日志
-docker-compose logs -f api
-docker-compose logs -f web
-docker-compose logs -f nginx  # 生产环境
+docker compose logs -f api
+docker compose logs -f web
+docker compose logs -f nginx  # 生产环境
 
 # 查看最近日志
-docker-compose logs --tail=100 api
+docker compose logs --tail=100 api
 ```
 
 ### 性能监控
@@ -166,7 +166,7 @@ docker-compose logs --tail=100 api
 docker stats
 
 # 查看容器详情
-docker-compose ps
+docker compose ps
 docker inspect <container-name>
 ```
 
@@ -209,7 +209,7 @@ docker inspect <container-name>
 
    ```bash
    # 查看容器日志
-   docker-compose logs <service-name>
+   docker compose logs <service-name>
 
    # 检查端口占用
    netstat -tulpn | grep <port>
@@ -222,20 +222,20 @@ docker inspect <container-name>
    sudo ufw status
 
    # 检查服务绑定
-   docker-compose ps
+   docker compose ps
    ```
 
 ### 回滚操作
 
 ```bash
 # 停止当前服务
-docker-compose down
+docker compose down
 
 # 加载备份镜像
 docker load < /opt/wenshu/backups/backup_YYYYMMDD_HHMMSS/images.tar.gz
 
 # 启动备份版本
-docker-compose up -d
+docker compose up -d
 ```
 
 ## 📈 维护操作

@@ -42,7 +42,14 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
-if ! command -v docker-compose &> /dev/null; then
+# 检查Docker Compose是否可用（优先使用新版 docker compose）
+if docker compose version &> /dev/null; then
+    DOCKER_COMPOSE="docker compose"
+    log_info "使用 Docker Compose Plugin"
+elif command -v docker-compose &> /dev/null; then
+    DOCKER_COMPOSE="docker-compose"
+    log_info "使用传统 docker-compose"
+else
     log_error "Docker Compose未安装，请先安装Docker Compose"
     exit 1
 fi
@@ -56,13 +63,13 @@ sudo mkdir -p "$BACKUP_DIR"
 cd "$DEPLOY_PATH"
 
 # 备份当前版本（如果存在）
-if [ -f docker-compose.yml ] && docker-compose ps | grep -q "Up"; then
+if [ -f docker-compose.yml ] && $DOCKER_COMPOSE ps | grep -q "Up"; then
     log_info "备份当前运行的服务..."
     BACKUP_NAME="backup_$(date +%Y%m%d_%H%M%S)"
     mkdir -p "$BACKUP_DIR/$BACKUP_NAME"
 
     # 导出当前镜像
-    docker save $(docker-compose config --services | xargs -I {} echo "wenshu-{}:latest") | gzip > "$BACKUP_DIR/$BACKUP_NAME/images.tar.gz"
+    docker save $($DOCKER_COMPOSE config --services | xargs -I {} echo "wenshu-{}:latest") | gzip > "$BACKUP_DIR/$BACKUP_NAME/images.tar.gz"
 
     # 备份配置文件
     cp docker-compose.yml .env "$BACKUP_DIR/$BACKUP_NAME/" 2>/dev/null || true
@@ -89,14 +96,14 @@ if [ -f wenshu-web.tar.gz ]; then
 fi
 
 # 停止现有服务
-if docker-compose ps | grep -q "Up"; then
+if $DOCKER_COMPOSE ps | grep -q "Up"; then
     log_info "停止现有服务..."
-    docker-compose down --remove-orphans
+    $DOCKER_COMPOSE down --remove-orphans
 fi
 
 # 启动服务
 log_info "启动服务..."
-docker-compose up -d
+$DOCKER_COMPOSE up -d
 
 # 等待服务启动
 log_info "等待服务启动..."
@@ -111,7 +118,7 @@ if curl -f http://localhost:${API_PORT}/health > /dev/null 2>&1; then
     log_success "API服务健康检查通过"
 else
     log_error "API服务健康检查失败"
-    docker-compose logs api
+    $DOCKER_COMPOSE logs api
     exit 1
 fi
 
@@ -121,13 +128,13 @@ if curl -f http://localhost:${WEB_PORT}/health > /dev/null 2>&1; then
     log_success "Web服务健康检查通过"
 else
     log_error "Web服务健康检查失败"
-    docker-compose logs web
+    $DOCKER_COMPOSE logs web
     exit 1
 fi
 
 # 显示服务状态
 log_info "服务状态:"
-docker-compose ps
+$DOCKER_COMPOSE ps
 
 # 显示服务访问地址
 log_success "部署完成！"
@@ -152,6 +159,6 @@ log_success "部署脚本执行完成！"
 
 # 显示日志命令提示
 log_info "查看日志命令:"
-log_info "  - 查看所有服务日志: docker-compose logs -f"
-log_info "  - 查看API日志: docker-compose logs -f api"
-log_info "  - 查看Web日志: docker-compose logs -f web"
+log_info "  - 查看所有服务日志: $DOCKER_COMPOSE logs -f"
+log_info "  - 查看API日志: $DOCKER_COMPOSE logs -f api"
+log_info "  - 查看Web日志: $DOCKER_COMPOSE logs -f web"
