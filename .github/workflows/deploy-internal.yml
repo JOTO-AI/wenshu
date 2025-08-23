@@ -159,7 +159,7 @@ jobs:
 
           # 传输配置文件
           echo "📄 传输配置文件..."
-          sshpass -p "${{ secrets.DEPLOY_PASSWORD }}" scp -v docker-compose.yml docker.env.example \
+          sshpass -p "${{ secrets.DEPLOY_PASSWORD }}" scp -v docker-compose.yml docker-compose.prod.yml docker.env.example \
             "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/"
 
           # 传输部署脚本
