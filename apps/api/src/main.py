@@ -13,7 +13,7 @@ app = FastAPI(
 )
 
 # 从环境变量获取 CORS 配置
-cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000")
+cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3001,http://localhost:3000")
 allowed_origins = [origin.strip() for origin in cors_origins.split(",")]
 
 # CORS配置
