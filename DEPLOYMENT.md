@@ -27,12 +27,30 @@ VPN_PASSWORD=your-password
 VPN_SERVER_CERT=pin-sha256:your-server-certificate-fingerprint
 ```
 
-**获取证书指纹**：
+**获取 VPN 服务器证书指纹**：
+
+从本地连接失败信息中获取（推荐）：
 
 ```bash
-# 在本地连接VPN时，OpenConnect会显示证书指纹
-# 示例：pin-sha256:/aKwHj0Omw7WPTQmVmdH+qhhkafnj1Zb8eSxXTLVjlU=
+# 当首次连接VPN服务器时，OpenConnect会显示证书错误并提供正确的指纹
+# 例如您的情况：
+# 要在将来信任此服务器，可以添加这个到你的命令行：
+#     --servercert pin-sha256:/aKwHj0Omw7WPTQmVmdH+qhhkafnj1Zb8eSxXTLVjlU=
+#
+# 复制 pin-sha256:xxxx 部分到 GitHub Secrets 的 VPN_SERVER_CERT
 ```
+
+或使用命令获取：
+
+```bash
+# 获取服务器证书指纹
+openssl s_client -servername your-vpn-server.com -connect your-vpn-server.com:443 < /dev/null 2>/dev/null | \
+  openssl x509 -fingerprint -sha256 -noout | \
+  awk -F= '{print $2}' | sed 's/://g' | tr '[:upper:]' '[:lower:]' | \
+  xxd -r -p | base64 | sed 's/^/pin-sha256:/'
+```
+
+**重要**：每个 VPN 服务器都有唯一的证书指纹，必须使用正确的指纹！
 
 #### 服务器部署配置
 

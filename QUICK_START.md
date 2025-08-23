@@ -11,7 +11,23 @@
 
 ### 启动步骤
 
-1. **安装依赖**:
+1. **配置开发环境**:
+
+   为确保端口稳定性，在项目根目录创建 `.env.development` 文件：
+
+   ```bash
+   # 创建开发环境配置
+   cat > .env.development << 'EOF'
+   # 前端应用端口 - 固定为3001避免端口冲突
+   WEB_APP_PORT=3001
+   # API端口
+   API_PORT=8000
+   # CORS配置
+   CORS_ORIGINS=http://localhost:3001,http://localhost:3000,http://localhost:4200
+   EOF
+   ```
+
+2. **安装依赖**:
 
    ```bash
    # 安装前端依赖
@@ -23,7 +39,7 @@
    cd ../..
    ```
 
-2. **启动开发服务**:
+3. **启动开发服务**:
 
    ```bash
    # 启动所有服务
@@ -34,10 +50,52 @@
      pnpm run dev:api    # 后端 (端口: 8000)
    ```
 
-3. **访问应用**:
+4. **访问应用**:
    - 前端: http://localhost:3001
    - 后端 API: http://localhost:8000
    - API 文档: http://localhost:8000/docs
+
+### 端口配置说明
+
+| 服务            | 端口 | 说明                   |
+| --------------- | ---- | ---------------------- |
+| 前端开发服务器  | 3001 | 固定端口，避免自动分配 |
+| 后端 API 服务器 | 8000 | FastAPI 开发服务器     |
+| HMR 热更新      | 4001 | 前端端口+1000          |
+
+**端口稳定性**：
+
+- `vite.config.ts` 中设置了 `strictPort: true`
+- 如果 3001 端口被占用，服务会报错而不是自动切换端口
+- 这确保了开发环境的一致性
+
+### 开发环境故障排查
+
+#### 端口被占用
+
+```bash
+Error: Port 3001 is already in use
+```
+
+**解决方案**：
+
+```bash
+# 查找占用端口的进程
+lsof -i :3001
+# 终止占用进程（替换<PID>为实际进程ID）
+kill -9 <PID>
+# 或修改端口
+echo "WEB_APP_PORT=3002" >> .env.development
+```
+
+#### CORS 错误
+
+确保后端 API 的 CORS_ORIGINS 包含前端地址：
+
+```bash
+# 在 .env.development 中设置
+CORS_ORIGINS=http://localhost:3001,http://localhost:3000,http://localhost:4200
+```
 
 ## Docker 环境启动
 
@@ -92,7 +150,14 @@
    DEPLOY_PASSWORD=your-server-password
    ```
 
-   **注意**：VPN_SERVER_CERT 是证书指纹，可在本地连接 VPN 时获取
+   **获取证书指纹**：从本地连接 VPN 失败信息中获取，例如：
+
+   ```bash
+   # 当首次连接VPN时，OpenConnect会显示：
+   # 要在将来信任此服务器，可以添加这个到你的命令行：
+   #     --servercert pin-sha256:your-actual-fingerprint
+   # 复制完整的 pin-sha256:xxxx 作为 VPN_SERVER_CERT 的值
+   ```
 
 2. **触发部署**:
    - 推送到 `main` 分支自动部署到 staging

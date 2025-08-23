@@ -42,11 +42,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
-      # 安装OpenConnect VPN客户端
+      # 安装OpenConnect VPN客户端和相关脚本
       - name: Install OpenConnect
         run: |
           sudo apt-get update
-          sudo apt-get install -y openconnect
+          sudo apt-get install -y openconnect vpnc-scripts
+
+          # 确保vpnc-script存在并可执行
+          if [ ! -f /etc/vpnc/vpnc-script ]; then
+            sudo mkdir -p /etc/vpnc
+            sudo ln -sf /usr/share/vpnc-scripts/vpnc-script /etc/vpnc/vpnc-script
+          fi
+          sudo chmod +x /etc/vpnc/vpnc-script
 
       # 创建VPN配置文件
       - name: Setup VPN configuration
