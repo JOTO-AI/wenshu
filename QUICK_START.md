@@ -148,6 +148,7 @@ CORS_ORIGINS=http://localhost:3001,http://localhost:3000,http://localhost:4200
    DEPLOY_HOST=your-internal-server-ip
    DEPLOY_USER=deploy
    DEPLOY_PASSWORD=your-server-password
+   DEPLOY_PATH=~/wenshu
    ```
 
    **证书指纹配置**：

@@ -31,8 +31,8 @@ log_error() {
 
 # 获取环境参数
 ENVIRONMENT=${1:-staging}
-DEPLOY_PATH=${DEPLOY_PATH:-/opt/wenshu}
-BACKUP_DIR=${BACKUP_DIR:-/opt/wenshu/backups}
+DEPLOY_PATH=${DEPLOY_PATH:-~/wenshu}
+BACKUP_DIR=${BACKUP_DIR:-~/wenshu/backups}
 
 log_info "开始部署到 $ENVIRONMENT 环境"
 
@@ -65,8 +65,8 @@ fi
 
 # 创建必要的目录
 log_info "创建部署目录..."
-mkdir -p "$DEPLOY_PATH" 2>/dev/null || sudo mkdir -p "$DEPLOY_PATH"
-mkdir -p "$BACKUP_DIR" 2>/dev/null || sudo mkdir -p "$BACKUP_DIR"
+mkdir -p "$DEPLOY_PATH"
+mkdir -p "$BACKUP_DIR"
 
 # 进入部署目录
 cd "$DEPLOY_PATH"
