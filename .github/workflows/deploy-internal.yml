@@ -254,15 +254,16 @@ jobs:
             echo "ℹ️ 未找到VPN进程"
           fi
 
-      # 第八阶段：发送部署通知
-      - name: Send deployment notification
-        if: always()
+      # 第八阶段：部署完成通知
+      - name: Deployment completed
+        if: success()
         run: |
-          if [ "${{ job.status }}" == "success" ]; then
-            echo "🚀 部署成功到内网环境: ${{ github.event.inputs.environment || 'staging' }}"
-            echo "✅ 所有服务正常运行"
-          else
-            echo "❌ 部署失败: ${{ github.event.inputs.environment || 'staging' }}"
-            echo "🔍 请检查上述日志信息"
-          fi
-          # 这里可以添加发送到Slack、邮件或其他通知渠道的代码
+          echo "🚀 部署成功到内网环境: ${{ github.event.inputs.environment || 'staging' }}"
+          echo "✅ 所有服务正常运行"
+
+      - name: Deployment failed
+        if: failure()
+        run: |
+          echo "❌ 部署失败: ${{ github.event.inputs.environment || 'staging' }}"
+          echo "🔍 请检查上述日志信息"
+          exit 1
