@@ -169,7 +169,14 @@ jobs:
 
           echo "✅ 文件传输完成"
 
-      # 第六阶段：执行部署
+      # 第六阶段：修复Docker权限
+      - name: Fix Docker permissions  
+        run: |
+          echo "🔧 修复目标服务器Docker权限..."
+          sshpass -p "${{ secrets.DEPLOY_PASSWORD }}" ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "echo '${{ secrets.DEPLOY_PASSWORD }}' | sudo -S usermod -aG docker ${{ secrets.DEPLOY_USER }}"
+
+      # 第七阶段：执行部署  
       - name: Deploy on target server
         run: |
           echo "🚀 在目标服务器上执行部署"
@@ -181,10 +188,20 @@ jobs:
             echo "📂 文件列表:"
             ls -la
 
+            # 检查Docker权限，设置sudo后备
+            echo "🔍 检查Docker权限..."
+            if docker ps &>/dev/null; then
+                echo "✅ Docker权限正常"
+                USE_SUDO=""
+            else
+                echo "⚠️ Docker权限不足，使用sudo执行"
+                USE_SUDO="sudo"
+            fi
+
             # 加载Docker镜像
             echo "📥 加载Docker镜像..."
-            docker load < wenshu-api.tar.gz
-            docker load < wenshu-web.tar.gz
+            $USE_SUDO docker load < wenshu-api.tar.gz
+            $USE_SUDO docker load < wenshu-web.tar.gz
 
             # 设置环境变量
             if [ ! -f .env ]; then
@@ -193,14 +210,14 @@ jobs:
             fi
 
             # 备份当前运行的容器（如果存在）
-            if docker compose ps 2>/dev/null | grep -q "Up"; then
+            if $USE_SUDO docker compose -f docker-compose.yml -f docker-compose.prod.yml ps 2>/dev/null | grep -q "Up"; then
               echo "🔄 停止现有容器..."
-              docker compose down --remove-orphans
+              $USE_SUDO docker compose -f docker-compose.yml -f docker-compose.prod.yml down --remove-orphans
             fi
 
             # 启动新的容器
             echo "🚀 启动容器..."
-            docker compose up -d
+            $USE_SUDO docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
             # 等待服务启动
             echo "⏳ 等待服务启动..."
@@ -214,7 +231,7 @@ jobs:
               echo "✅ API健康检查通过"
             else
               echo "❌ API健康检查失败"
-              docker compose logs api
+              $USE_SUDO docker compose -f docker-compose.yml -f docker-compose.prod.yml logs api
               exit 1
             fi
 
@@ -223,7 +240,7 @@ jobs:
               echo "✅ Web健康检查通过"
             else
               echo "❌ Web健康检查失败"
-              docker compose logs web
+              $USE_SUDO docker compose -f docker-compose.yml -f docker-compose.prod.yml logs web
               exit 1
             fi
 
@@ -231,18 +248,18 @@ jobs:
 
             # 清理旧镜像（保留最新的两个版本）
             echo "🧹 清理旧资源..."
-            docker image prune -f
+            $USE_SUDO docker image prune -f
 
             # 显示运行状态
             echo "📊 容器运行状态:"
-            docker compose ps
+            $USE_SUDO docker compose -f docker-compose.yml -f docker-compose.prod.yml ps
 
             echo "🌐 服务访问地址:"
             echo "  - API: http://localhost:8000"
             echo "  - Web: http://localhost:80"
           EOF
 
-      # 第七阶段：断开VPN连接
+      # 第八阶段：断开VPN连接
       - name: Disconnect VPN
         if: always()
         run: |
@@ -254,7 +271,7 @@ jobs:
             echo "ℹ️ 未找到VPN进程"
           fi
 
-      # 第八阶段：部署完成通知
+      # 第九阶段：部署完成通知
       - name: Deployment completed
         if: success()
         run: |

@@ -42,12 +42,22 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
+# 检查Docker权限，设置sudo后备
+log_info "检查Docker权限..."
+if docker ps &>/dev/null; then
+    log_success "Docker权限正常"
+    USE_SUDO=""
+else
+    log_warning "Docker权限不足，将使用sudo执行"
+    USE_SUDO="sudo"
+fi
+
 # 检查Docker Compose是否可用（优先使用新版 docker compose）
-if docker compose version &> /dev/null; then
-    DOCKER_COMPOSE="docker compose"
+if $USE_SUDO docker compose version &> /dev/null; then
+    DOCKER_COMPOSE="$USE_SUDO docker compose"
     log_info "使用 Docker Compose Plugin"
 elif command -v docker-compose &> /dev/null; then
-    DOCKER_COMPOSE="docker-compose"
+    DOCKER_COMPOSE="$USE_SUDO docker-compose"
     log_info "使用传统 docker-compose"
 else
     log_error "Docker Compose未安装，请先安装Docker Compose"
@@ -97,12 +107,12 @@ fi
 # 加载Docker镜像（如果存在tar.gz文件）
 if [ -f wenshu-api.tar.gz ]; then
     log_info "加载API镜像..."
-    docker load < wenshu-api.tar.gz
+    $USE_SUDO docker load < wenshu-api.tar.gz
 fi
 
 if [ -f wenshu-web.tar.gz ]; then
     log_info "加载Web镜像..."
-    docker load < wenshu-web.tar.gz
+    $USE_SUDO docker load < wenshu-web.tar.gz
 fi
 
 # 停止现有服务
@@ -156,8 +166,8 @@ log_info "  - Health Web: http://localhost:${WEB_PORT}/health"
 
 # 清理旧镜像和容器
 log_info "清理旧资源..."
-docker image prune -f
-docker container prune -f
+$USE_SUDO docker image prune -f
+$USE_SUDO docker container prune -f
 
 # 清理旧备份（保留最新5个）
 if [ -d "$BACKUP_DIR" ]; then
