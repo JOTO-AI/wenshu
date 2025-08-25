@@ -85,7 +85,6 @@ playwright/.cache/
 
 .kiro
 .augment
-.github
 
 vite.config.*.timestamp*
 vitest.config.*.timestamp*

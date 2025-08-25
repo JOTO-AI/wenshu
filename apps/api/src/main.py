@@ -14,8 +14,9 @@ app = FastAPI(
     title="智能问数 API", description="企业级私有化对话式数据分析平台", version="1.0.0"
 )
 
-# 从配置获取 CORS 配置
-allowed_origins = [origin.strip() for origin in settings.cors_origins.split(",")]
+# 从环境变量获取 CORS 配置
+cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3001,http://localhost:3000")
+allowed_origins = [origin.strip() for origin in cors_origins.split(",")]
 
 # CORS配置
 app.add_middleware(

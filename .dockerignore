@@ -1,0 +1,83 @@
+# Git相关
+.git
+.gitignore
+.gitattributes
+
+# 依赖目录
+node_modules
+.pnpm-store
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv
+venv/
+pip-wheel-metadata/
+
+# 构建产物
+dist/
+build/
+*.tsbuildinfo
+.nx/
+
+# 开发文件
+.env.local
+.env.development
+.env.test
+*.log
+logs
+coverage/
+.nyc_output
+*.lcov
+
+# IDE和编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS生成的文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 文档和说明
+README.md
+CHANGELOG.md
+LICENSE
+docs/
+*.md
+
+# 配置文件
+.eslintrc*
+.prettierrc*
+jest.config.*
+vitest.config.*
+.editorconfig
+
+# Docker相关
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# GitHub Actions
+.github/
+
+# 测试文件（但保留tsconfig配置文件）
+**/*.test.*
+**/*.spec.*
+!**/tsconfig.spec.json
+**/test/
+**/tests/
+**/__tests__/
+
+# 临时文件
+tmp/
+temp/
+.tmp/

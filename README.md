@@ -154,14 +154,14 @@ nx graph
 可在工作区根目录创建 `.env` 来配置端口与跨域：
 
 ```bash
-# 前端端口（默认为 3000）
-WEB_APP_PORT=3000
+# 前端端口（默认为 3001）
+WEB_APP_PORT=3001
 
 # 后端端口（默认 8000）
 API_PORT=8000
 
 # 允许的跨域来源（与 apps/api/src/main.py 一致）
-CORS_ORIGINS=http://localhost:3000
+CORS_ORIGINS=http://localhost:3001
 ```
 
 ## API 服务
@@ -198,28 +198,35 @@ API 文档在开发模式下可通过 http://localhost:8000/docs 访问。
 
 - 架构设计详见 `docs/智能问数系统架构设计-方案一.md`
 
-## 部署
+## 🚀 部署
 
-### Docker 部署
+### 内网自动部署
 
-```bash
-# 构建镜像
-docker-compose build
+推送到 `main` 分支自动部署到 staging 环境。
 
-# 启动服务
-docker-compose up -d
-```
+部署成功后访问：
+- **前端应用**: `http://服务器IP`
+- **API文档**: `http://服务器IP:8000/docs`
 
-### 生产构建
+### 本地Docker部署  
 
 ```bash
-# 构建前端应用
-pnpm build
+# 配置环境
+cp docker.env.example .env
 
-# 构建后端应用
-cd apps/api
-uv build
+# 启动所有服务
+docker compose up -d
+
+# 访问应用
+# 前端: http://localhost
+# API: http://localhost:8000/docs
 ```
+
+### 详细部署文档
+
+- [简化部署指南](./DEPLOY_SIMPLE.md) ⭐ **推荐**
+- [快速启动](./QUICK_START.md) - 包含开发环境  
+- [详细部署文档](./DEPLOYMENT_DETAILED.md) - 完整配置说明
 
 ## 开发指南
 
